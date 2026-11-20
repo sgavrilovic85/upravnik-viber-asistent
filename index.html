@@ -1,671 +1,119 @@
 <!DOCTYPE html>
-<html lang="sr-Latn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upravnik — Viber Asistent</title>
-  <style>
-    :root {
-      --bg: #f4f6f9;
-      --card: #ffffff;
-      --ink: #17202a;
-      --muted: #5d6d7e;
-      --line: #dce3ec;
-      --accent: #5b2c6f;
-      --accent-2: #7360f2;
-      --accent-soft: #f5eef8;
-      --ok: #1e8449;
-      --ok-soft: #eafaf1;
-      --warn: #b7950b;
-      --warn-soft: #fef9e7;
-      --danger: #c0392b;
-      --radius: 12px;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      line-height: 1.45;
-    }
-
-    header {
-      background: linear-gradient(135deg, #4a235a 0%, #5b2c6f 55%, #6654e6 100%);
-      color: #fff;
-      padding: 14px 18px;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-    }
-
-    .header-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 700;
-    }
-
-    .brand p {
-      margin: 2px 0 0;
-      font-size: 0.82rem;
-      opacity: 0.9;
-    }
-
-    .header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    button, select, input, textarea {
-      font-family: inherit;
-      font-size: 0.92rem;
-    }
-
-    button {
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-weight: 600;
-      transition: all 0.15s ease;
-    }
-
-    button:active { transform: scale(0.98); }
-
-    .btn-light {
-      background: rgba(255,255,255,0.16);
-      color: #fff;
-      border-color: rgba(255,255,255,0.3);
-    }
-    .btn-light:hover { background: rgba(255,255,255,0.25); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-    .btn-primary:hover { background: #4a235a; }
-
-    .btn-viber {
-      background: var(--accent-2);
-      color: #fff;
-    }
-    .btn-viber:hover { background: #5e4be0; }
-
-    .btn-ok {
-      background: var(--ok);
-      color: #fff;
-    }
-    .btn-ok:hover { background: #196f3d; }
-
-    .btn-outline {
-      background: #fff;
-      color: var(--ink);
-      border-color: var(--line);
-    }
-    .btn-outline:hover { background: #f8fafc; }
-
-    .btn-danger {
-      background: #fff;
-      color: var(--danger);
-      border-color: #f5b7b1;
-    }
-    .btn-danger:hover { background: #fdedec; }
-
-    .btn-sm { padding: 5px 9px; font-size: 0.82rem; }
-
-    .container {
-      max-width: 1280px;
-      margin: 16px auto;
-      padding: 0 14px 40px;
-    }
-
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .tab-btn {
-      background: var(--card);
-      color: var(--ink);
-      border: 1px solid var(--line);
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-weight: 700;
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    @media (max-width: 960px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 14px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-      margin-bottom: 14px;
-    }
-
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 4px;
-      margin-top: 10px;
-    }
-
-    label:first-child { margin-top: 0; }
-
-    input[type="text"],
-    select,
-    textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 9px 11px;
-      background: #fff;
-      color: var(--ink);
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(115, 96, 242, 0.12);
-    }
-
-    textarea { min-height: 84px; resize: vertical; }
-    textarea.msg-box { min-height: 210px; font-size: 0.96rem; line-height: 1.5; }
-
-    .row-inline {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .row-inline > .grow { flex: 1 1 200px; }
-
-    .row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .row-2 { grid-template-columns: 1fr; }
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 700;
-      background: var(--accent-soft);
-      color: var(--accent);
-    }
-
-    .badge-ok { background: var(--ok-soft); color: var(--ok); }
-    .badge-warn { background: var(--warn-soft); color: var(--warn); }
-
-    .drop-zone {
-      margin-top: 10px;
-      border: 2px dashed #b8c4d4;
-      border-radius: 10px;
-      padding: 12px;
-      background: #fafbfd;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .drop-zone:hover, .drop-zone.dragover {
-      border-color: var(--accent-2);
-      background: var(--accent-soft);
-    }
-
-    .drop-zone p {
-      margin: 4px 0 0;
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .media-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 10px;
-    }
-
-    .media-box {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 8px;
-      background: #fafbfd;
-      max-width: 280px;
-    }
-
-    .media-box img {
-      max-width: 100%;
-      max-height: 180px;
-      border-radius: 6px;
-      display: block;
-    }
-
-    .media-box video {
-      max-width: 100%;
-      max-height: 180px;
-      border-radius: 6px;
-      display: block;
-      background: #000;
-    }
-
-    .media-caption {
-      font-size: 0.76rem;
-      color: var(--muted);
-      margin-top: 4px;
-      word-break: break-all;
-    }
-
-    .hint {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-top: 5px;
-    }
-
-    .voice-status {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--accent);
-      margin-top: 6px;
-      min-height: 18px;
-    }
-
-    .log-item {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 11px;
-      margin-bottom: 10px;
-      background: #fff;
-    }
-
-    .log-head {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 6px;
-      font-size: 0.82rem;
-    }
-
-    .log-q {
-      font-weight: 600;
-      margin-bottom: 6px;
-      white-space: pre-wrap;
-    }
-
-    .log-a {
-      background: #f8f9fb;
-      border-left: 3px solid var(--accent-2);
-      padding: 8px 10px;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      white-space: pre-wrap;
-      margin-bottom: 8px;
-    }
-
-    .log-media {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-
-    .log-img {
-      max-height: 150px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      display: block;
-    }
-
-    .log-video {
-      max-height: 160px;
-      max-width: 260px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      display: block;
-      background: #000;
-    }
-
-    .modal-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 60;
-      align-items: center;
-      justify-content: center;
-      padding: 14px;
-    }
-
-    .modal-backdrop.open { display: flex; }
-
-    .modal {
-      background: #fff;
-      border-radius: var(--radius);
-      max-width: 640px;
-      width: 100%;
-      max-height: 86vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 12px 32px rgba(0,0,0,0.22);
-    }
-
-    .modal-header, .modal-footer {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .modal-footer {
-      border-bottom: none;
-      border-top: 1px solid var(--line);
-      justify-content: flex-end;
-    }
-
-    .modal-body {
-      padding: 14px 16px;
-      overflow-y: auto;
-    }
-
-    .bldg-list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 7px 0;
-      border-bottom: 1px solid #eef2f6;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 18px;
-      right: 18px;
-      background: #17202a;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      z-index: 90;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.2s ease;
-      pointer-events: none;
-    }
-
-    .toast.show { opacity: 1; transform: translateY(0); }
-  </style>
-</head>
-<body>
-
-<header>
-  <div class="header-inner">
-    <div class="brand">
-      <h1 id="t_title">Upravnik — Viber Asistent</h1>
-      <p id="t_subtitle">Brzi odgovori stanarima, prosleđivanje majstorima, slike, video i evidencija</p>
-    </div>
-    <div class="header-actions">
-      <button class="btn-light btn-sm" id="btnScriptToggle" onclick="toggleScript()">Ћирилица</button>
-      <button class="btn-light btn-sm" id="btnResetDemo" onclick="resetBuildingsDefault()">Vrati zgrade</button>
-    </div>
-  </div>
-</header>
-
-<div class="container">
-  <div class="row-inline" style="margin-bottom: 12px;">
-    <div class="grow">
-      <label for="buildingSearch" id="lbl_search">Pretraga zgrada</label>
-      <input type="text" id="buildingSearch" placeholder="Ukucaj ulicu ili broj..." oninput="renderBuildingSelect()" />
-    </div>
-    <div class="grow" style="flex: 2 1 280px;">
-      <label for="buildingSelect" id="lbl_building">Zgrada / Viber grupa</label>
-      <div class="row-inline">
-        <select id="buildingSelect" class="grow" onchange="onBuildingChange()"></select>
-        <button class="btn-outline" id="btnEditBuildings" onclick="openBuildingModal()">Uredi</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn active" id="tabBtn1" onclick="switchTab('qa')">1. Pitanje → Odgovor / Majstor</button>
-    <button class="tab-btn" id="tabBtn2" onclick="switchTab('notice')">2. Obaveštenje (Glas / Tekst)</button>
-    <button class="tab-btn" id="tabBtn3" onclick="switchTab('log')">3. Evidencija (<span id="logCount">0</span>)</button>
-  </div>
-
-  <!-- TAB 1: PITANJE -> ODGOVOR / MAJSTOR -->
-  <section id="tab-qa" class="tab-panel active">
-    <div class="grid-2">
-      <div>
-        <div class="card">
-          <h2>
-            <span id="h_paste_q">Pitanje / prijava stanara iz Vibera</span>
-            <span class="badge" id="detectedTopicBadge">Tema: Opšte</span>
-          </h2>
-
-          <div class="row-inline" style="margin-bottom: 6px;">
-            <button class="btn-outline btn-sm" onclick="pasteTextFromClipboard('questionInput')" id="btnPasteQ">Nalepi tekst</button>
-            <button class="btn-outline btn-sm" onclick="clearQuestion()" id="btnClearQ">Obriši</button>
-          </div>
-          <textarea id="questionInput" placeholder="Nalepi ovde poruku stanara iz Vibera (Ctrl + V)..." oninput="autoDetectTopic()"></textarea>
-
-          <div class="drop-zone" id="dropZoneQ" onclick="document.getElementById('fileInputQ').click()">
-            <strong id="dz_title">Nalepi sliku (Ctrl + V), prevuci sliku ili video, ili izaberi fajl</strong>
-            <p id="dz_sub">Fotografija ili video snimak kvara, računa, uplatnice ili stanja na terenu</p>
-            <input type="file" id="fileInputQ" accept="image/*,video/*" multiple style="display:none" onchange="handleFileSelect(event)" />
-          </div>
-
-          <div class="media-grid" id="mediaPreviewGrid" style="display:none;">
-            <div class="media-box" id="imgPreviewBox" style="display:none;">
-              <img id="previewQImg" alt="Slika" />
-              <div class="media-caption" id="imgCaption"></div>
-              <div style="margin-top:6px;">
-                <button class="btn-danger btn-sm" onclick="removeCurrentImage()" id="btnRemoveImg">Ukloni sliku</button>
-              </div>
-            </div>
-            <div class="media-box" id="videoPreviewBox" style="display:none;">
-              <video id="previewQVideo" controls playsinline></video>
-              <div class="media-caption" id="videoCaption"></div>
-              <div style="margin-top:6px;">
-                <button class="btn-danger btn-sm" onclick="removeCurrentVideo()" id="btnRemoveVideo">Ukloni video</button>
-              </div>
-            </div>
-          </div>
-
-          <label for="topicSelect" id="lbl_topic">Tema / šablon odgovora</label>
-          <select id="topicSelect" onchange="buildAnswerFromTemplate()"></select>
-
-          <div class="row-2">
-            <div>
-              <label for="tenantName" id="lbl_tenant">Ime stanara / broj stana (opciono)</label>
-              <input type="text" id="tenantName" placeholder="npr. Ivana, stan 12" oninput="buildAnswerFromTemplate()" />
-            </div>
-            <div>
-              <label for="masterName" id="lbl_master">Majstor / servis za prosleđivanje</label>
-              <input type="text" id="masterName" placeholder="npr. vodoinstalater / lift servis / električar" oninput="refreshCurrentOutputIfMaster()" />
-            </div>
-          </div>
-
-          <label for="extraNote" id="lbl_note">Tvoj kratak uput / napomena</label>
-          <div class="row-inline">
-            <input type="text" id="extraNote" class="grow" placeholder="npr. radovi su završeni ili majstor dolazi sutra u 10h" oninput="buildAnswerFromTemplate()" />
-            <button type="button" class="btn-outline btn-sm" onclick="startVoice('extraNote', 'voiceStatusQ')" id="btnVoiceQ">🎤 Glas</button>
-          </div>
-          <div class="voice-status" id="voiceStatusQ"></div>
-
-          <div class="row-inline" style="margin-top: 12px;">
-            <button class="btn-ok" onclick="saveToLog()" id="btnSaveLog">Sačuvaj u evidenciju</button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="card">
-          <h2>
-            <span id="h_answer">Pripremljena poruka</span>
-            <span class="badge" id="modeBadge">Za stanara (Viber)</span>
-          </h2>
-
-          <div class="row-inline" style="margin-bottom: 8px;">
-            <button class="btn-primary btn-sm" onclick="buildAnswerFromTemplate()" id="btnModeTenant">Odgovor stanaru</button>
-            <button class="btn-outline btn-sm" onclick="buildContractorMessage()" id="btnModeMaster">Prosledi majstoru</button>
-          </div>
-
-          <textarea id="answerOutput" class="msg-box"></textarea>
-          <div class="row-inline" style="margin-top: 10px;">
-            <button class="btn-viber" onclick="copyMessage('answerOutput', true)" id="btnCopyAns">Kopiraj za Viber</button>
-            <a class="btn-outline" href="viber://forward" style="text-decoration:none; padding:8px 12px; border-radius:8px; font-weight:600; font-size:0.92rem;" id="btnOpenViber1">Otvori Viber</a>
-          </div>
-          <p class="hint" id="hint_viber">Kopira tekst jednim klikom; u Viberu zatim zalepi poruku (Ctrl + V) stanaru ili majstoru (a sliku/video pošalji kao prilog iz Vibera).</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TAB 2: OBAVESTENJE (GLAS / TEKST) -->
-  <section id="tab-notice" class="tab-panel">
-    <div class="grid-2">
-      <div class="card">
-        <h2 id="h_notice_input">Tvoj glasovni ili pisani uput za obaveštenje</h2>
-        <p class="hint" id="hint_notice">Na primer: „Počinje da se radi krov u ponedeljak u 8 časova“ ili „Krečenje ulaza završeno, molimo stanare da paze na zidove“.</p>
-
-        <div class="row-inline" style="margin-top: 8px;">
-          <button type="button" class="btn-primary" onclick="startVoice('voiceNoticeInput', 'voiceStatusN')" id="btnVoiceN">🎤 Snimi glasom</button>
-          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('start_works')" id="btnPresetStart">Početak radova</button>
-          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('end_works')" id="btnPresetEnd">Završetak radova</button>
-          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('meeting')" id="btnPresetMeeting">Poziv na skupštinu</button>
-          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('payment')" id="btnPresetPay">Podsetnik za uplatu</button>
-          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('urgent')" id="btnPresetUrgent">Hitno</button>
-        </div>
-        <div class="voice-status" id="voiceStatusN"></div>
-
-        <label for="voiceNoticeInput" id="lbl_notice_raw">Tekst uputa</label>
-        <textarea id="voiceNoticeInput" placeholder="Izgovori ili ukucaj kratak uput..." oninput="buildNoticeMessage()"></textarea>
-
-        <div class="row-2">
-          <div>
-            <label for="noticeType" id="lbl_notice_type">Vrsta obaveštenja</label>
-            <select id="noticeType" onchange="buildNoticeMessage()"></select>
-          </div>
-          <div>
-            <label for="noticeWhen" id="lbl_notice_when">Datum / vreme (opciono)</label>
-            <input type="text" id="noticeWhen" placeholder="npr. ponedeljak od 08:00" oninput="buildNoticeMessage()" />
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2 id="h_notice_out">Uređeno obaveštenje za Viber grupu</h2>
-        <textarea id="noticeOutput" class="msg-box"></textarea>
-        <div class="row-inline" style="margin-top: 10px;">
-          <button class="btn-viber" onclick="copyMessage('noticeOutput', false)" id="btnCopyNotice">Kopiraj obaveštenje</button>
-          <button class="btn-ok" onclick="saveNoticeToLog()" id="btnSaveNotice">Sačuvaj u evidenciju</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TAB 3: EVIDENCIJA -->
-  <section id="tab-log" class="tab-panel">
-    <div class="card">
-      <h2>
-        <span id="h_log">Evidencija pitanja i obaveštenja</span>
-        <div class="row-inline">
-          <select id="logFilterBuilding" onchange="renderLog()" style="width:auto;">
-            <option value="__ALL__">Sve zgrade</option>
-          </select>
-          <select id="logFilterTopic" onchange="renderLog()" style="width:auto;"></select>
-          <select id="logFilterStatus" onchange="renderLog()" style="width:auto;"></select>
-          <button class="btn-danger btn-sm" onclick="clearAllLog()" id="btnClearAllLog">Obriši evidenciju</button>
-        </div>
-      </h2>
-      <div id="logList"></div>
-    </div>
-  </section>
-</div>
-
-<!-- MODAL ZA UREDJIVANJE ZGRADA -->
-<div class="modal-backdrop" id="buildingModal">
-  <div class="modal">
-    <div class="modal-header">
-      <strong id="modalTitle">Uređivanje zgrada</strong>
-      <button class="btn-outline btn-sm" onclick="closeBuildingModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <label for="newBuildingInput" id="lbl_add_bldg">Dodaj novu zgradu / ulaze</label>
-      <div class="row-inline">
-        <input type="text" id="newBuildingInput" class="grow" placeholder="npr. Dunavska 8 ili 22. Septembar 44" />
-        <button class="btn-primary" onclick="addBuilding()" id="btnAddBldg">Dodaj</button>
-      </div>
-      <div id="buildingEditorList" style="margin-top: 14px;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ok" onclick="closeBuildingModal()" id="btnDoneBldg">Gotovo</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Upravnik — Odgovori stanarima</title>
+<meta name="theme-color" content="#12337a">
+<style>
+:root{--bg:#f2f4f8;--card:#fff;--tx:#162033;--mu:#5a6678;--pr:#12337a;--or:#e8730c;--ok:#17703f;--bad:#b3261e;--bd:#d3d9e3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:20px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:90px}
+header{background:var(--pr);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+header h1{font-size:23px;margin:0}
+.mini{background:#ffffff26;color:#fff;border:0;border-radius:10px;padding:10px 12px;font:inherit;font-size:16px;font-weight:700}
+.tabs{display:flex;gap:8px;padding:10px 12px;position:sticky;top:0;background:var(--bg);z-index:5}
+.tab{flex:1;min-height:58px;border:2px solid var(--pr);background:#fff;color:var(--pr);border-radius:14px;font:inherit;font-size:17px;font-weight:700;padding:6px}
+.tab.on{background:var(--pr);color:#fff}
+main{max-width:660px;margin:0 auto;padding:0 14px}
+.step{font-size:22px;font-weight:800;margin:26px 0 8px;color:var(--pr)}
+label{display:block;font-weight:700;margin:14px 0 6px}
+select,input,textarea{width:100%;font:inherit;font-size:19px;color:var(--tx);background:#fff;border:2px solid var(--bd);border-radius:14px;padding:12px}
+select{min-height:60px}textarea{min-height:130px;resize:vertical}
+.outbox{min-height:210px;border-color:var(--pr);background:#fbfcff}
+.big{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:68px;margin:10px 0;border:0;border-radius:16px;background:var(--pr);color:#fff;font:inherit;font-size:21px;font-weight:800;padding:10px}
+.big.orange{background:var(--or)}.big.green{background:var(--ok)}
+.big.ghost{background:#fff;color:var(--pr);border:2px solid var(--pr)}
+.big.sm{min-height:52px;font-size:17px}
+.chip{background:#e6edfb;color:var(--pr);border-radius:14px;padding:12px 14px;font-weight:800;margin:10px 0}
+.hint{color:var(--mu);font-size:16px;min-height:1.3em}
+.card{background:var(--card);border:2px solid var(--bd);border-radius:14px;padding:12px 14px;margin:12px 0}
+.badge{display:inline-block;background:#e6edfb;color:var(--pr);border-radius:8px;padding:2px 8px;font-size:15px;font-weight:700}
+.ok{background:#dff3e6;color:var(--ok)}.warn{background:#fdebd5;color:#9a4b00}
+.q{color:var(--mu);font-size:17px;margin:6px 0;white-space:pre-wrap}.a{white-space:pre-wrap;font-size:18px;margin:6px 0}
+.row{display:flex;gap:8px}.row>*{flex:1}
+details{margin:10px 0}summary{font-weight:700;padding:10px 0;color:var(--pr)}
+details input{margin:6px 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#162033;color:#fff;border-radius:14px;padding:14px 20px;font-weight:700;opacity:0;transition:.2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}
+img.p{max-width:100%;border-radius:10px;margin:6px 0}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.th{position:relative;width:98px;height:98px;border-radius:12px;overflow:hidden;border:2px solid var(--bd);background:#000}
+.th img,.th video{width:100%;height:100%;object-fit:cover;display:block}
+.th .x{position:absolute;top:3px;right:3px;width:34px;height:34px;border:0;border-radius:50%;background:#000b;color:#fff;font-size:17px;font-weight:800}
+.th .pl{position:absolute;left:7px;bottom:4px;color:#fff;font-size:20px;text-shadow:0 0 4px #000}
+:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+</style></head><body>
+<header><h1 data-t="Odgovori stanarima">Odgovori stanarima</h1><button class="mini" onclick="toggleScript()">ABC / АБВ</button></header>
+<nav class="tabs">
+ <button id="tab_a" class="tab on" onclick="tab('a')" data-t="💬 Odgovor">💬 Odgovor</button>
+ <button id="tab_n" class="tab" onclick="tab('n')" data-t="📣 Obaveštenje">📣 Obaveštenje</button>
+ <button id="tab_l" class="tab" onclick="tab('l')"><span data-t="📂 Evidencija">📂 Evidencija</span> <span id="cnt"></span></button>
+</nav>
+<main>
+<section id="sec_a">
+ <label for="bld" data-t="Zgrada">Zgrada</label><select id="bld"></select>
+
+ <div class="step" data-t="1 · Poruka stanara">1 · Poruka stanara</div>
+ <button class="big" onclick="pasteQ()" data-t="📋 Nalepi poruku stanara">📋 Nalepi poruku stanara</button>
+ <textarea id="q" data-p="ili ovde ukucajte / nalepite poruku" placeholder="ili ovde ukucajte / nalepite poruku" aria-label="Poruka stanara"></textarea>
+ <button class="big ghost" onclick="pick('q')" data-t="📷 Dodaj sliku / video stanara">📷 Dodaj sliku / video stanara</button>
+ <div id="mq" class="thumbs" data-slot="q"></div>
+ <div id="chip" class="chip"></div>
+ <label for="topic" data-t="Tema (menja se sama, možete je promeniti)">Tema (menja se sama, možete je promeniti)</label><select id="topic"></select>
+
+ <div class="step" data-t="2 · Moja glasovna napomena">2 · Moja glasovna napomena</div>
+ <button class="big orange" onclick="voice('note','vs1')" data-t="🎤 Govorim napomenu">🎤 Govorim napomenu</button>
+ <div id="vs1" class="hint"></div>
+ <textarea id="note" data-p="npr. majstor dolazi sutra u 10h" placeholder="npr. majstor dolazi sutra u 10h" aria-label="Moja napomena"></textarea>
+ <details id="det"><summary data-t="Ime stanara / majstor (nije obavezno)">Ime stanara / majstor (nije obavezno)</summary>
+  <input id="tenant" data-p="Ime stanara / stan" placeholder="Ime stanara / stan">
+  <input id="master" data-p="Majstor / servis (za poruku majstoru)" placeholder="Majstor / servis (za poruku majstoru)">
+ </details>
+
+ <div class="step" data-t="3 · Odgovor">3 · Odgovor</div>
+ <div class="row"><button id="m_t" class="tab on" onclick="mode('tenant')" data-t="Za stanara">Za stanara</button><button id="m_m" class="tab" onclick="mode('master')" data-t="Za majstora">Za majstora</button></div>
+ <textarea id="out" class="outbox" aria-label="Odgovor"></textarea>
+ <button class="big ghost" onclick="pick('r')" data-t="📎 Dodaj sliku / video uz odgovor">📎 Dodaj sliku / video uz odgovor</button>
+ <div id="mr" class="thumbs" data-slot="r"></div>
+ <button class="big green" onclick="copyT('out')" data-t="📋 Kopiraj odgovor">📋 Kopiraj odgovor</button>
+ <button class="big" onclick="shareOut()" data-t="📤 Pošalji (Viber...)">📤 Pošalji (Viber...)</button>
+ <div id="sh1" class="hint"></div>
+ <button class="big ghost" onclick="saveLog()" data-t="💾 Sačuvaj u evidenciju">💾 Sačuvaj u evidenciju</button>
+ <button class="big ghost" onclick="clearAll()" data-t="🧹 Nova poruka">🧹 Nova poruka</button>
+</section>
+
+<section id="sec_n" hidden>
+ <div class="step" data-t="Obaveštenje za celu zgradu">Obaveštenje za celu zgradu</div>
+ <label for="nbld" data-t="Zgrada">Zgrada</label><select id="nbld"></select>
+ <label for="ntype" data-t="Vrsta obaveštenja">Vrsta obaveštenja</label><select id="ntype"></select>
+ <button class="big orange" onclick="voice('ntext','vs2')" data-t="🎤 Govorim obaveštenje">🎤 Govorim obaveštenje</button>
+ <div id="vs2" class="hint"></div>
+ <textarea id="ntext" data-p="Šta želite da objavite (npr. počinje krečenje u ponedeljak)" placeholder="Šta želite da objavite" aria-label="Tekst obaveštenja"></textarea>
+ <label for="nwhen" data-t="Kada (nije obavezno)">Kada (nije obavezno)</label><input id="nwhen" data-p="npr. petak u 18h" placeholder="npr. petak u 18h">
+ <div class="step" data-t="Obaveštenje">Obaveštenje</div>
+ <textarea id="nout" class="outbox" aria-label="Obaveštenje"></textarea>
+ <button class="big ghost" onclick="pick('n')" data-t="📎 Dodaj sliku / video uz obaveštenje">📎 Dodaj sliku / video uz obaveštenje</button>
+ <div id="mn" class="thumbs" data-slot="n"></div>
+ <button class="big green" onclick="copyT('nout')" data-t="📋 Kopiraj obaveštenje">📋 Kopiraj obaveštenje</button>
+ <button class="big" onclick="shareN()" data-t="📤 Pošalji (Viber...)">📤 Pošalji (Viber...)</button>
+ <div id="sh2" class="hint"></div>
+ <button class="big ghost" onclick="saveNotice()" data-t="💾 Sačuvaj u evidenciju">💾 Sačuvaj u evidenciju</button>
+</section>
+
+<section id="sec_l" hidden>
+ <div class="step" data-t="Evidencija">Evidencija</div>
+ <select id="fb" aria-label="Zgrada"></select>
+ <select id="ft" aria-label="Tema" style="margin-top:8px"></select>
+ <select id="fs" aria-label="Status" style="margin-top:8px"></select>
+ <div id="list"></div>
+</section>
+</main>
+<input type="file" id="f_q" accept="image/*,video/*" multiple hidden>
+<input type="file" id="f_r" accept="image/*,video/*" multiple hidden>
+<input type="file" id="f_n" accept="image/*,video/*" multiple hidden>
+<div id="toast"></div>
 <script>
-  const DEFAULT_BUILDINGS = [
+
+const DEFAULT_BUILDINGS = [
     "Pantelije Pante Jakovljevića 8, 8A, 8B (3 ulaza)",
     "22. Septembar 44",
     "22. Septembar 46",
@@ -705,7 +153,7 @@
 
     T("cleaning", "Čistoća i kućni red", "Čišćenje zajedničkih prostorija", "ciscen|ocisc|ocist|cistac|prljav|pometen|higijen", "služba za čišćenje", true, "Poštovani{tenant}, u vezi čišćenja zajedničkih prostorija zgrade {building} — {note}primedba je evidentirana i prosleđena. Upravnik."),
     T("trash", "Čistoća i kućni red", "Smeće / kontejneri / glomazni otpad", "smec|kontejner|otpad|kanta|glomazn|djubr|namestaj", "komunalno preduzeće", false, "Poštovani{tenant}, u vezi smeća/kontejnera u zgradi {building} — {note}molimo da se otpad odlaže isključivo na predviđena mesta, a glomazni otpad ne ostavlja u ulazu. Upravnik."),
-    T("noise", "Čistoća i kućni red", "Buka / komšijski odnosi / kućni red", "buk|galam|glasn|muzik|komsij|ometa|nocu|nocni", "", false, "Poštovani{tenant}, u vezi prijave buke/ometanja u zgradi {building} — {note}molimo sve stanare da poštuju kućni red i mir u zgradi, naročito u večernjim i noćnim satima. Upravnik."),
+    T("noise", "Čistoća i kućni red", "Buka / komšijski odnosi / kućni red", "buk|galam|glasn|muzik|komsij|ometa|nocu|nocni|nocas|koncert|zurk|svirk|proslav|lupa|lupanj|tresu|lome|skac", "", false, "Poštovani{tenant}, u vezi prijave buke/ometanja u zgradi {building} — {note}molimo sve stanare da poštuju kućni red i mir u zgradi, naročito u večernjim i noćnim satima. Upravnik."),
     T("parking", "Čistoća i kućni red", "Parking / vozila / kolica u ulazu", "parking|parkir|auto$|automobil|vozil|bicikl|kolica|blokir", "", false, "Poštovani{tenant}, u vezi parkiranja i odlaganja stvari u zajedničkim prostorima zgrade {building} — {note}molimo da se prolazi, ulazi i stepeništa ne blokiraju, zbog bezbednosti stanara. Upravnik."),
     T("pets", "Čistoća i kućni red", "Kućni ljubimci", "ljubimc|pas$|psa$|psi$|macka|macke|laj|izmet", "", false, "Poštovani{tenant}, u vezi kućnih ljubimaca u zgradi {building} — {note}molimo vlasnike da vode računa o čistoći i miru zajedničkih prostora. Upravnik."),
     T("storage", "Čistoća i kućni red", "Podrum / ostave / tavan", "podrum|ostav|tavan", "", false, "Poštovani{tenant}, u vezi podruma/ostava/tavana zgrade {building} — {note}molimo da se zajednički prostori ne koriste za odlaganje zapaljivih i nepotrebnih stvari. Upravnik."),
@@ -713,7 +161,7 @@
 
     T("payment", "Novac i obračun", "Račun / uplata / poziv na broj", "racun|uplat|uplatnic|poziv na broj|proknjiz|qr", "", false, "Poštovani{tenant}, za zgradu {building} — {note}molimo da na uplatnici uvek upišete tačan poziv na broj kako bi uplata bila ispravno proknjižena. Upravnik."),
     T("debt", "Novac i obračun", "Dugovanje / opomena", "dugovan|dug$|opomen|zaostatak|rata$|neplacen", "", false, "Poštovani{tenant}, u vezi stanja zaduženja za zgradu {building} — {note}molimo vas da proverite poslednji izvod/račun ili da mi se javite radi usaglašavanja stanja. Upravnik."),
-    T("calc", "Novac i obračun", "Pitanje o obračunu / iznosu", "obracun|iznos|poskupl|povecan|veci$|veca$|vece$|razumem|objasni|kvadratur|rezervni fond|cena|koliko treba", "", false, "Poštovani{tenant}, u vezi obračuna za zgradu {building} — {note}pregled zaduženja i uplata za vaš stan možete dobiti od upravnika. Upravnik."),
+    T("calc", "Novac i obračun", "Pitanje o obračunu / iznosu", "obracun|iznos|poskupl|povecan|veci$|veca$|razumem|objasni|kvadratur|rezervni fond|cena|koliko treba", "", false, "Poštovani{tenant}, u vezi obračuna za zgradu {building} — {note}pregled zaduženja i uplata za vaš stan možete dobiti od upravnika. Upravnik."),
     T("funds", "Novac i obračun", "Vanredni troškovi / prikupljanje sredstava", "vanredn|prikupljan|sredstav|kolekt|dodatn", "", false, "Poštovani{tenant}, u vezi vanrednih troškova/prikupljanja sredstava u zgradi {building} — {note}o visini i načinu prikupljanja biće obavešteni svi stanari. Upravnik."),
     T("receipt", "Novac i obračun", "Potvrda o uplati / stanje računa", "potvrd|potvrda o uplati|uplatila sam|uplatio sam|dokaz o uplati|saldo|izvod|stanje racuna|stanje duga", "", false, "Poštovani{tenant}, u vezi potvrde o uplati/stanju računa za zgradu {building} — {note}potvrdu ili pregled stanja možete dobiti od upravnika na zahtev. Upravnik."),
 
@@ -727,105 +175,6 @@
     T("suggestion", "Ostalo", "Predlog / primedba / žalba", "predlog|zalb|primedb|nezadovoljn|prituzb|pohval", "", false, "Poštovani{tenant}, hvala na poruci u vezi zgrade {building}. {note}Vaš predlog/primedba je evidentiran i biće razmotren, a po potrebi uvršten na dnevni red sastanka stanara. Upravnik."),
     T("insurance", "Ostalo", "Šteta / osiguranje", "osiguranj|stet|polisa", "", false, "Poštovani{tenant}, u vezi štete u zgradi {building} — {note}molimo da sačuvate fotografije i opis štete radi eventualne prijave osiguranju. Upravnik.")
   ];
-
-  const UI_STRINGS = {
-    lat: {
-      title: "Upravnik — Viber Asistent",
-      subtitle: "Brzi odgovori stanarima, prosleđivanje majstorima, slike, video i evidencija",
-      btnScript: "Ћирилица",
-      btnReset: "Vrati zgrade",
-      lblSearch: "Pretraga zgrada",
-      lblBuilding: "Zgrada / Viber grupa",
-      btnEdit: "Uredi",
-      tab1: "1. Pitanje → Odgovor / Majstor",
-      tab2: "2. Obaveštenje (Glas / Tekst)",
-      tab3: "3. Evidencija",
-      hPasteQ: "Pitanje / prijava stanara iz Vibera",
-      btnPasteQ: "Nalepi tekst",
-      btnClearQ: "Obriši",
-      dzTitle: "Nalepi sliku (Ctrl + V), prevuci sliku ili video, ili izaberi fajl",
-      dzSub: "Fotografija ili video snimak kvara, računa, uplatnice ili stanja na terenu",
-      btnRemoveImg: "Ukloni sliku",
-      btnRemoveVideo: "Ukloni video",
-      lblTopic: "Tema / šablon odgovora",
-      lblTenant: "Ime stanara / broj stana (opciono)",
-      lblMaster: "Majstor / servis za prosleđivanje",
-      lblNote: "Tvoj kratak uput / napomena",
-      btnVoiceQ: "🎤 Glas",
-      btnSaveLog: "Sačuvaj u evidenciju",
-      hAnswer: "Pripremljena poruka",
-      btnModeTenant: "Odgovor stanaru",
-      btnModeMaster: "Prosledi majstoru",
-      btnCopyAns: "Kopiraj za Viber",
-      btnOpenViber1: "Otvori Viber",
-      hintViber: "Kopira tekst jednim klikom; u Viberu zatim zalepi poruku (Ctrl + V) stanaru ili majstoru (a sliku/video pošalji kao prilog iz Vibera).",
-      hNoticeIn: "Tvoj glasovni ili pisani uput za obaveštenje",
-      hintNotice: "Na primer: „Počinje da se radi krov u ponedeljak u 8 časova“ ili „Krečenje ulaza završeno, molimo stanare da paze na zidove“.",
-      btnVoiceN: "🎤 Snimi glasom",
-      btnPresetStart: "Početak radova",
-      btnPresetEnd: "Završetak radova",
-      lblNoticeRaw: "Tekst uputa",
-      lblNoticeType: "Vrsta obaveštenja",
-      lblNoticeWhen: "Datum / vreme (opciono)",
-      hNoticeOut: "Uređeno obaveštenje za Viber grupu",
-      btnCopyNotice: "Kopiraj obaveštenje",
-      btnSaveNotice: "Sačuvaj u evidenciju",
-      hLog: "Evidencija pitanja i obaveštenja",
-      btnClearAllLog: "Obriši evidenciju",
-      modalTitle: "Uređivanje zgrada",
-      lblAddBldg: "Dodaj novu zgradu / ulaze",
-      btnAddBldg: "Dodaj",
-      btnDoneBldg: "Gotovo"
-    },
-    cyr: {
-      title: "Управник — Вибер Асистент",
-      subtitle: "Брзи одговори станарима, прослеђивање мајсторима, слике, видео и евиденција",
-      btnScript: "Latinica",
-      btnReset: "Врати зграде",
-      lblSearch: "Претрага зграда",
-      lblBuilding: "Зграда / Вибер група",
-      btnEdit: "Уреди",
-      tab1: "1. Питање → Одговор / Мајстор",
-      tab2: "2. Обавештење (Глас / Текст)",
-      tab3: "3. Евиденција",
-      hPasteQ: "Питање / пријава станара из Вибера",
-      btnPasteQ: "Налепи текст",
-      btnClearQ: "Обриши",
-      dzTitle: "Налепи слику (Ctrl + V), превуци слику или видео, или изабери фајл",
-      dzSub: "Фотографија или видео снимак квара, рачуна, уплатнице или стања на терену",
-      btnRemoveImg: "Уклони слику",
-      btnRemoveVideo: "Уклони видео",
-      lblTopic: "Тема / шаблон одговора",
-      lblTenant: "Име станара / број стана (опционо)",
-      lblMaster: "Мајстор / сервис за прослеђивање",
-      lblNote: "Твој кратак упут / напомена",
-      btnVoiceQ: "🎤 Глас",
-      btnSaveLog: "Сачувај у евиденцију",
-      hAnswer: "Припремљена порука",
-      btnModeTenant: "Одговор станару",
-      btnModeMaster: "Проследи мајстору",
-      btnCopyAns: "Копирај за Вибер",
-      btnOpenViber1: "Отвори Вибер",
-      hintViber: "Копира текст једним кликом; у Виберу затим залепи поруку (Ctrl + V) станару или мајстору (а слику/видео пошаљи као прилог из Вибера).",
-      hNoticeIn: "Твој гласовни или писани упут за обавештење",
-      hintNotice: "На пример: „Почиње да се ради кров у понедељак у 8 часова“ или „Кречење улаза завршено, молимо станаре да пазе на зидове“.",
-      btnVoiceN: "🎤 Сними гласом",
-      btnPresetStart: "Почетак радова",
-      btnPresetEnd: "Завршетак радова",
-      lblNoticeRaw: "Текст упута",
-      lblNoticeType: "Врста обавештења",
-      lblNoticeWhen: "Датум / време (опционо)",
-      hNoticeOut: "Уређено обавештење за Вибер групу",
-      btnCopyNotice: "Копирај обавештење",
-      btnSaveNotice: "Сачувај у евиденцију",
-      hLog: "Евиденција питања и обавештења",
-      btnClearAllLog: "Обриши евиденцију",
-      modalTitle: "Уређивање зграда",
-      lblAddBldg: "Додај нову зграду / улазе",
-      btnAddBldg: "Додај",
-      btnDoneBldg: "Готово"
-    }
-  };
 
   function toCyr(text) {
     if (!text) return "";
@@ -853,195 +202,6 @@
     return state.script === "cyr" ? toCyr(text) : text;
   }
 
-  const STORAGE_KEYS = {
-    buildings: "upravnik_viber_buildings_v1",
-    log: "upravnik_viber_log_v1",
-    script: "upravnik_viber_script_v1"
-  };
-
-  let state = {
-    script: localStorage.getItem(STORAGE_KEYS.script) || "lat",
-    buildings: loadBuildings(),
-    log: loadLog(),
-    outputMode: "tenant",
-    currentImageDataUrl: null,
-    currentImageName: "",
-    currentVideoUrl: null,
-    currentVideoName: ""
-  };
-
-  function loadBuildings() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.buildings);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) return parsed;
-      }
-    } catch (e) {}
-    return [...DEFAULT_BUILDINGS];
-  }
-
-  function saveBuildings() {
-    localStorage.setItem(STORAGE_KEYS.buildings, JSON.stringify(state.buildings));
-  }
-
-  function loadLog() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.log);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {}
-    return [];
-  }
-
-  function saveLogStorage() {
-    try {
-      localStorage.setItem(STORAGE_KEYS.log, JSON.stringify(state.log));
-    } catch (e) {
-      // Ako je previše slika pa localStorage bude pun, sačuvaj bez velikih priloga
-      const slim = state.log.map(item => ({ ...item, image: null, videoName: item.videoName || "" }));
-      try { localStorage.setItem(STORAGE_KEYS.log, JSON.stringify(slim)); } catch (e2) {}
-    }
-    updateLogCount();
-  }
-
-  function showToast(msg) {
-    const el = document.getElementById("toast");
-    el.textContent = fmtScript(msg);
-    el.classList.add("show");
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => el.classList.remove("show"), 2200);
-  }
-
-  function toggleScript() {
-    state.script = state.script === "lat" ? "cyr" : "lat";
-    localStorage.setItem(STORAGE_KEYS.script, state.script);
-    applyStaticLabels();
-    renderBuildingSelect();
-    renderTopicSelect();
-    renderNoticeTypeSelect();
-    renderLogFilters();
-    if (state.outputMode === "master") buildContractorMessage();
-    else buildAnswerFromTemplate();
-    buildNoticeMessage();
-    renderLog();
-  }
-
-  function applyStaticLabels() {
-    const s = UI_STRINGS[state.script];
-    document.getElementById("t_title").textContent = s.title;
-    document.getElementById("t_subtitle").textContent = s.subtitle;
-    document.getElementById("btnScriptToggle").textContent = s.btnScript;
-    document.getElementById("btnResetDemo").textContent = s.btnReset;
-    document.getElementById("lbl_search").textContent = s.lblSearch;
-    document.getElementById("lbl_building").textContent = s.lblBuilding;
-    document.getElementById("btnEditBuildings").textContent = s.btnEdit;
-    document.getElementById("tabBtn1").textContent = s.tab1;
-    document.getElementById("tabBtn2").textContent = s.tab2;
-    document.getElementById("h_paste_q").textContent = s.hPasteQ;
-    document.getElementById("btnPasteQ").textContent = s.btnPasteQ;
-    document.getElementById("btnClearQ").textContent = s.btnClearQ;
-    document.getElementById("dz_title").textContent = s.dzTitle;
-    document.getElementById("dz_sub").textContent = s.dzSub;
-    document.getElementById("btnRemoveImg").textContent = s.btnRemoveImg;
-    document.getElementById("btnRemoveVideo").textContent = s.btnRemoveVideo;
-    document.getElementById("lbl_topic").textContent = s.lblTopic;
-    document.getElementById("lbl_tenant").textContent = s.lblTenant;
-    document.getElementById("lbl_master").textContent = s.lblMaster;
-    document.getElementById("lbl_note").textContent = s.lblNote;
-    document.getElementById("btnVoiceQ").textContent = s.btnVoiceQ;
-    document.getElementById("btnSaveLog").textContent = s.btnSaveLog;
-    document.getElementById("h_answer").textContent = s.hAnswer;
-    document.getElementById("btnModeTenant").textContent = s.btnModeTenant;
-    document.getElementById("btnModeMaster").textContent = s.btnModeMaster;
-    document.getElementById("btnCopyAns").textContent = s.btnCopyAns;
-    document.getElementById("btnOpenViber1").textContent = s.btnOpenViber1;
-    document.getElementById("hint_viber").textContent = s.hintViber;
-    document.getElementById("h_notice_input").textContent = s.hNoticeIn;
-    document.getElementById("hint_notice").textContent = s.hintNotice;
-    document.getElementById("btnVoiceN").textContent = s.btnVoiceN;
-    document.getElementById("btnPresetStart").textContent = s.btnPresetStart;
-    document.getElementById("btnPresetEnd").textContent = s.btnPresetEnd;
-    document.getElementById("btnPresetMeeting").textContent = fmtScript("Poziv na skupštinu");
-    document.getElementById("btnPresetPay").textContent = fmtScript("Podsetnik za uplatu");
-    document.getElementById("btnPresetUrgent").textContent = fmtScript("Hitno");
-    document.getElementById("hint_notice").textContent = fmtScript("Na primer: „Počinje da se radi krov u ponedeljak u 8 časova“, „Sastanak stanara u petak u 18 časova“ ili „Podsećamo na uplatu do 25. u mesecu“.");
-    document.getElementById("lbl_notice_raw").textContent = s.lblNoticeRaw;
-    document.getElementById("lbl_notice_type").textContent = s.lblNoticeType;
-    document.getElementById("lbl_notice_when").textContent = s.lblNoticeWhen;
-    document.getElementById("h_notice_out").textContent = s.hNoticeOut;
-    document.getElementById("btnCopyNotice").textContent = s.btnCopyNotice;
-    document.getElementById("btnSaveNotice").textContent = s.btnSaveNotice;
-    document.getElementById("h_log").textContent = s.hLog;
-    document.getElementById("btnClearAllLog").textContent = s.btnClearAllLog;
-    document.getElementById("modalTitle").textContent = s.modalTitle;
-    document.getElementById("lbl_add_bldg").textContent = s.lblAddBldg;
-    document.getElementById("btnAddBldg").textContent = s.btnAddBldg;
-    document.getElementById("btnDoneBldg").textContent = s.btnDoneBldg;
-    updateLogCount();
-  }
-
-  function updateLogCount() {
-    const label = state.script === "cyr" ? "Евиденција" : "Evidencija";
-    document.getElementById("tabBtn3").innerHTML = `3. ${label} (<span id="logCount">${state.log.length}</span>)`;
-  }
-
-  function renderBuildingSelect() {
-    const q = (document.getElementById("buildingSearch").value || "").toLowerCase().trim();
-    const sel = document.getElementById("buildingSelect");
-    const prev = sel.value;
-    const filtered = state.buildings.filter(b => b.toLowerCase().includes(q));
-    sel.innerHTML = "";
-    (filtered.length ? filtered : state.buildings).forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b;
-      opt.textContent = fmtScript(b);
-      sel.appendChild(opt);
-    });
-    if (prev && [...sel.options].some(o => o.value === prev)) {
-      sel.value = prev;
-    }
-
-    const logSel = document.getElementById("logFilterBuilding");
-    const logPrev = logSel.value;
-    logSel.innerHTML = `<option value="__ALL__">${fmtScript("Sve zgrade")}</option>`;
-    state.buildings.forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b;
-      opt.textContent = fmtScript(b);
-      logSel.appendChild(opt);
-    });
-    if (logPrev) logSel.value = logPrev;
-  }
-
-  function renderTopicSelect(selectedId) {
-    const sel = document.getElementById("topicSelect");
-    const current = selectedId || sel.value || "general";
-    sel.innerHTML = "";
-    const groups = {};
-    TEMPLATES.forEach(t => { (groups[t.group] = groups[t.group] || []).push(t); });
-    Object.keys(groups).forEach(g => {
-      const og = document.createElement("optgroup");
-      og.label = fmtScript(g);
-      groups[g].forEach(t => {
-        const opt = document.createElement("option");
-        opt.value = t.id;
-        opt.textContent = fmtScript(t.name);
-        og.appendChild(opt);
-      });
-      sel.appendChild(og);
-    });
-    sel.value = current;
-  }
-
-  function onBuildingChange() {
-    if (state.outputMode === "master") buildContractorMessage();
-    else buildAnswerFromTemplate();
-    buildNoticeMessage();
-  }
-
   function normTxt(t) {
     return (t || "").toLowerCase().replace(/[čć]/g, "c").replace(/š/g, "s").replace(/ž/g, "z").replace(/đ/g, "dj").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
   }
@@ -1057,89 +217,6 @@
     return n;
   }
 
-  function autoDetectTopic() {
-    const txt = normTxt(document.getElementById("questionInput").value);
-    const words = txt.split(" ");
-    let matched = TEMPLATES[0], best = 0;
-    for (const tpl of TEMPLATES.slice(1)) {
-      let n = scoreTemplate(tpl, txt, words);
-      if (n && tpl.urgent) n += 5;
-      if (n > best) { best = n; matched = tpl; }
-    }
-    document.getElementById("topicSelect").value = matched.id;
-    document.getElementById("detectedTopicBadge").textContent = fmtScript(`Tema: ${matched.name}`);
-    if (state.outputMode === "master") buildContractorMessage();
-    else buildAnswerFromTemplate();
-  }
-
-  function formatNoteSentence(noteRaw) {
-    const clean = (noteRaw || "").trim();
-    if (!clean) return "";
-    const capitalized = clean.charAt(0).toUpperCase() + clean.slice(1);
-    return /[.!?]$/.test(capitalized) ? capitalized + " " : capitalized + ". ";
-  }
-
-  function buildAnswerFromTemplate() {
-    state.outputMode = "tenant";
-    document.getElementById("modeBadge").textContent = fmtScript("Za stanara (Viber)");
-
-    const bldg = document.getElementById("buildingSelect").value || "zgrada";
-    const topicId = document.getElementById("topicSelect").value || "general";
-    const tpl = TEMPLATES.find(t => t.id === topicId) || TEMPLATES[0];
-    document.getElementById("detectedTopicBadge").textContent = fmtScript(`Tema: ${tpl.name}`);
-    document.getElementById("masterName").placeholder = fmtScript(tpl.master ? `npr. ${tpl.master}` : "npr. vodoinstalater / lift servis / električar");
-
-    const tenantRaw = (document.getElementById("tenantName").value || "").trim();
-    const noteRaw = (document.getElementById("extraNote").value || "").trim();
-
-    const tenantPart = tenantRaw ? ` (${tenantRaw})` : "";
-    const notePart = formatNoteSentence(noteRaw);
-
-    const msg = tpl.body
-      .replace("{tenant}", tenantPart)
-      .replace("{building}", bldg)
-      .replace("{note}", notePart);
-
-    document.getElementById("answerOutput").value = fmtScript(msg);
-  }
-
-  function buildContractorMessage() {
-    state.outputMode = "master";
-    document.getElementById("modeBadge").textContent = fmtScript("Za majstora / servis");
-
-    const bldg = document.getElementById("buildingSelect").value || "zgrada";
-    const tpl = TEMPLATES.find(t => t.id === document.getElementById("topicSelect").value) || TEMPLATES[0];
-    const master = (document.getElementById("masterName").value || "").trim();
-    const tenant = (document.getElementById("tenantName").value || "").trim();
-    const q = (document.getElementById("questionInput").value || "").trim();
-    const note = (document.getElementById("extraNote").value || "").trim();
-
-    const attachments = [];
-    if (state.currentImageDataUrl) attachments.push(state.currentImageName || "slika");
-    if (state.currentVideoUrl) attachments.push(state.currentVideoName || "video snimak");
-    const mediaLine = attachments.length ? `Prilozi: ${attachments.join(", ")}` : "";
-
-    const closing = tpl.tech
-      ? "Molim za informaciju kada možete izaći na teren. Upravnik."
-      : "Molim za informaciju ili mišljenje. Upravnik.";
-
-    const lines = [
-      `PRIJAVA — ${tpl.name} — ${bldg}`,
-      master ? `Prosleđuje se: ${master}` : "",
-      tenant ? `Stanar / stan: ${tenant}` : "",
-      q ? `Opis prijave: ${q}` : "",
-      note ? `Napomena upravnika: ${note}` : "",
-      mediaLine,
-      closing
-    ].filter(Boolean);
-
-    document.getElementById("answerOutput").value = fmtScript(lines.join("\n"));
-  }
-
-  function refreshCurrentOutputIfMaster() {
-    if (state.outputMode === "master") buildContractorMessage();
-  }
-
   const NOTICES = {
     info:   { label: "Opšte obaveštenje za stanare", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, ${r || "molimo da obratite pažnju na obaveštenje upravnika."}. Upravnik.`.replace("..", ".") },
     start:  { label: "Početak radova (sa BZR napomenom)", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, obaveštavamo vas da počinju radovi${r ? ": " + r : ""}. Radovi se izvode uz poštovanje propisanih mera bezbednosti i zdravlja na radu (BZR). Molimo za oprez i razumevanje. Upravnik.` },
@@ -1153,414 +230,189 @@
     urgent: { label: "Hitno upozorenje", f: (b, w, r) => `HITNO — stanari zgrade ${b}${w}: ${r || "molimo da obratite pažnju na hitno obaveštenje upravnika"}. U slučaju neposredne opasnosti odmah pozovite 112. Upravnik.` }
   };
 
-  function renderNoticeTypeSelect() {
-    const sel = document.getElementById("noticeType");
-    const cur = sel.value || "info";
-    sel.innerHTML = "";
-    Object.keys(NOTICES).forEach(k => {
-      const opt = document.createElement("option");
-      opt.value = k;
-      opt.textContent = fmtScript(NOTICES[k].label);
-      sel.appendChild(opt);
-    });
-    sel.value = cur;
-  }
+  
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEYS = { buildings: "upravnik_viber_buildings_v1", log: "upravnik_viber_log_v1", script: "upravnik_viber_script_v1" };
+const LS = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); return true; } catch(e){ return false; } } };
+const state = { script: LS.get(KEYS.script) || "lat", mode: "tenant", buildings: [], log: [] };
+try { const b = JSON.parse(LS.get(KEYS.buildings) || "null"); state.buildings = Array.isArray(b) && b.length ? b : [...DEFAULT_BUILDINGS]; } catch(e){ state.buildings = [...DEFAULT_BUILDINGS]; }
+try { const l = JSON.parse(LS.get(KEYS.log) || "null"); state.log = Array.isArray(l) ? l : []; } catch(e){ state.log = []; }
 
-  function buildNoticeMessage() {
-    const bldg = document.getElementById("buildingSelect").value || "zgrada";
-    const raw = (document.getElementById("voiceNoticeInput").value || "").trim();
-    const type = document.getElementById("noticeType").value || "info";
-    const when = (document.getElementById("noticeWhen").value || "").trim();
-    const whenTxt = when ? ` (${when})` : "";
-    const n = NOTICES[type] || NOTICES.info;
-    document.getElementById("noticeOutput").value = fmtScript(n.f(bldg, whenTxt, raw));
-  }
+function saveLogStore(){
+  if(!LS.set(KEYS.log, JSON.stringify(state.log))) LS.set(KEYS.log, JSON.stringify(state.log.map(x => ({...x, image: null}))));
+  $("cnt").textContent = state.log.length ? "(" + state.log.length + ")" : "";
+}
+function toast(m){ const t=$("toast"); t.textContent=fmtScript(m); t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
+function curTpl(){ return TEMPLATES.find(t => t.id === $("topic").value) || TEMPLATES[0]; }
+function noteSentence(n){ const c=(n||"").trim(); if(!c) return ""; const u=c.charAt(0).toUpperCase()+c.slice(1); return /[.!?]$/.test(u) ? u+" " : u+". "; }
 
-  function applyQuickNotice(kind) {
-    const input = document.getElementById("voiceNoticeInput");
-    const map = { start_works: "start", end_works: "done", meeting: "meeting", payment: "payment", urgent: "urgent" };
-    document.getElementById("noticeType").value = map[kind] || "info";
-    if (kind === "start_works" && !input.value.trim()) input.value = "početak radova u zgradi";
-    if (kind === "end_works" && !input.value.trim()) input.value = "radovi su uspešno završeni";
-    buildNoticeMessage();
-  }
+function fillSelects(){
+  const opts = state.buildings.map(b => `<option value="${esc(b)}">${esc(fmtScript(b))}</option>`).join("");
+  const keep = [$("bld").value, $("nbld").value];
+  $("bld").innerHTML = opts; $("nbld").innerHTML = opts;
+  if (keep[0]) $("bld").value = keep[0]; if (keep[1]) $("nbld").value = keep[1];
+  const cur = $("topic").value || "general";
+  const groups = {}; TEMPLATES.forEach(t => (groups[t.group] = groups[t.group] || []).push(t));
+  $("topic").innerHTML = Object.keys(groups).map(g => `<optgroup label="${esc(fmtScript(g))}">${groups[g].map(t => `<option value="${t.id}">${esc(fmtScript(t.name))}</option>`).join("")}</optgroup>`).join("");
+  $("topic").value = cur;
+  const nt = $("ntype").value || "info";
+  $("ntype").innerHTML = Object.keys(NOTICES).map(k => `<option value="${k}">${esc(fmtScript(NOTICES[k].label))}</option>`).join("");
+  $("ntype").value = nt;
+  const fb=$("fb").value, ft=$("ft").value, fs=$("fs").value;
+  $("fb").innerHTML = `<option value="__ALL__">${esc(fmtScript("Sve zgrade"))}</option>` + opts;
+  $("ft").innerHTML = `<option value="__ALL__">${esc(fmtScript("Sve teme"))}</option>` + [...TEMPLATES.map(t=>t.name), "Obaveštenje"].map(n => `<option value="${esc(n)}">${esc(fmtScript(n))}</option>`).join("");
+  $("fs").innerHTML = ["__ALL__:Svi statusi","wait:Čeka odgovor","done:Odgovoreno"].map(x => { const [v,l]=x.split(":"); return `<option value="${v}">${esc(fmtScript(l))}</option>`; }).join("");
+  if (fb) $("fb").value = fb; if (ft) $("ft").value = ft; if (fs) $("fs").value = fs;
+}
+function labels(){
+  document.querySelectorAll("[data-t]").forEach(e => e.textContent = fmtScript(e.dataset.t));
+  document.querySelectorAll("[data-p]").forEach(e => e.placeholder = fmtScript(e.dataset.p));
+}
+function toggleScript(){ state.script = state.script === "lat" ? "cyr" : "lat"; LS.set(KEYS.script, state.script); labels(); fillSelects(); gen(); genNotice(); renderLog(); }
 
-  async function pasteTextFromClipboard(targetId) {
-    try {
-      const txt = await navigator.clipboard.readText();
-      if (txt) {
-        document.getElementById(targetId).value = txt;
-        if (targetId === "questionInput") autoDetectTopic();
-        showToast("Tekst je nalepljen");
-      } else {
-        showToast("Klipbord nema tekst");
-      }
-    } catch (e) {
-      showToast("Koristi Ctrl + V u polju za tekst");
-    }
-  }
+function tab(t){
+  ["a","n","l"].forEach(k => { $("sec_"+k).hidden = k !== t; $("tab_"+k).classList.toggle("on", k === t); });
+  if (t === "l") renderLog();
+  scrollTo(0,0);
+}
+function mode(m){ state.mode = m; $("m_t").classList.toggle("on", m==="tenant"); $("m_m").classList.toggle("on", m==="master"); if (m==="master") $("det").open = true; gen(); }
 
-  function clearQuestion() {
-    document.getElementById("questionInput").value = "";
-    document.getElementById("tenantName").value = "";
-    document.getElementById("masterName").value = "";
-    document.getElementById("extraNote").value = "";
-    removeCurrentImage();
-    removeCurrentVideo();
-    autoDetectTopic();
+function detect(){
+  const txt = normTxt($("q").value), words = txt.split(" ");
+  let best = TEMPLATES[0], bs = 0;
+  for (const tpl of TEMPLATES.slice(1)) { let n = scoreTemplate(tpl, txt, words); if (n && tpl.urgent) n += 5; if (n > bs) { bs = n; best = tpl; } }
+  $("topic").value = best.id;
+  gen();
+}
+function gen(){
+  const tpl = curTpl();
+  $("chip").textContent = fmtScript("Tema: " + tpl.name);
+  $("master").placeholder = fmtScript(tpl.master ? "npr. " + tpl.master : "Majstor / servis (za poruku majstoru)");
+  const bldg = $("bld").value || "zgrada", tenant = $("tenant").value.trim(), note = $("note").value.trim(), q = $("q").value.trim(), master = $("master").value.trim();
+  let msg;
+  if (state.mode === "master") {
+    msg = [`PRIJAVA — ${tpl.name} — ${bldg}`, master ? `Prosleđuje se: ${master}` : "", tenant ? `Stanar / stan: ${tenant}` : "", q ? `Opis prijave: ${q}` : "", media.q.length ? `Prilozi stanara: ${media.q.map(m => m.name).join(", ")}` : "", note ? `Napomena upravnika: ${note}` : "", tpl.tech ? "Molim za informaciju kada možete izaći na teren. Upravnik." : "Molim za informaciju ili mišljenje. Upravnik."].filter(Boolean).join("\n");
+  } else {
+    msg = tpl.body.replace("{tenant}", tenant ? ` (${tenant})` : "").replace("{building}", bldg).replace("{note}", noteSentence(note));
+    msg = msg.replace(/(\.\s)([a-zčćžšđ])/g, (m, a, b) => a + b.toUpperCase());
   }
-
-  function updateMediaGridVisibility() {
-    const hasImg = Boolean(state.currentImageDataUrl);
-    const hasVid = Boolean(state.currentVideoUrl);
-    document.getElementById("imgPreviewBox").style.display = hasImg ? "block" : "none";
-    document.getElementById("videoPreviewBox").style.display = hasVid ? "block" : "none";
-    document.getElementById("mediaPreviewGrid").style.display = (hasImg || hasVid) ? "flex" : "none";
+  $("out").value = fmtScript(msg);
+}
+function genNotice(){
+  const n = NOTICES[$("ntype").value] || NOTICES.info, w = $("nwhen").value.trim();
+  $("nout").value = fmtScript(n.f($("nbld").value || "zgrada", w ? ` (${w})` : "", $("ntext").value.trim()));
+}
+async function pasteQ(){
+  try { const t = await navigator.clipboard.readText(); if (!t.trim()) return toast("Nema ničega u kopiranom tekstu"); $("q").value = t.trim(); detect(); toast("Poruka nalepljena"); }
+  catch(e){ $("q").focus(); toast("Nalepite poruku ručno u polje (dugi pritisak → Nalepi)"); }
+}
+function voice(target, status){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition, st = $(status);
+  if (!SR) { st.textContent = fmtScript("Glasovni unos nije podržan u ovom pregledaču. Ukucajte napomenu."); return; }
+  const r = new SR(); r.lang = "sr-RS"; r.interimResults = false; r.maxAlternatives = 1;
+  st.textContent = fmtScript("🎤 Slušam... govorite.");
+  r.onresult = ev => { const t = ev.results[0][0].transcript, el = $(target); el.value = el.value ? el.value + " " + t : t; st.textContent = fmtScript("✓ " + t); if (target === "note") gen(); else genNotice(); };
+  r.onerror = () => { st.textContent = fmtScript("Snimanje nije uspelo. Proverite dozvolu za mikrofon."); };
+  r.start();
+}
+async function copyT(id){
+  const v = $(id).value; if (!v.trim()) return;
+  try { await navigator.clipboard.writeText(v); } catch(e){ $(id).select(); document.execCommand("copy"); }
+  toast("Kopirano! Nalepite u Viber.");
+}
+async function shareT(id){
+  const v = $(id).value; if (!v.trim()) return;
+  if (navigator.share) { try { await navigator.share({ text: v }); return; } catch(e){ if (e.name === "AbortError") return; } }
+  copyT(id);
+}
+const media = { q: [], r: [], n: [] };
+function pick(slot){ $("f_" + slot).click(); }
+function addMedia(slot, files){
+  let added = 0;
+  for (const f of files) {
+    const kind = f.type && f.type.startsWith("image/") ? "image" : f.type && f.type.startsWith("video/") ? "video" : null;
+    if (!kind) continue;
+    media[slot].push({ id: Date.now() + "_" + Math.random().toString(36).slice(2,6), file: f, url: URL.createObjectURL(f), kind, name: f.name || (kind === "image" ? "slika.jpg" : "video.mp4") });
+    added++;
   }
-
-  function setImageFile(file) {
-    if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      state.currentImageDataUrl = ev.target.result;
-      state.currentImageName = file.name || "slika.jpg";
-      document.getElementById("previewQImg").src = state.currentImageDataUrl;
-      document.getElementById("imgCaption").textContent = state.currentImageName;
-      updateMediaGridVisibility();
-      refreshCurrentOutputIfMaster();
-      showToast("Slika je dodata");
-    };
-    reader.readAsDataURL(file);
+  renderMedia(slot); if (slot === "q") gen();
+  if (added) toast(added > 1 ? "Prilozi su dodati" : "Prilog je dodat");
+}
+function removeMedia(slot, id){
+  const i = media[slot].findIndex(m => m.id === id);
+  if (i > -1) { URL.revokeObjectURL(media[slot][i].url); media[slot].splice(i, 1); }
+  renderMedia(slot); if (slot === "q") gen();
+}
+function renderMedia(slot){
+  $("m" + slot).innerHTML = media[slot].map(m => `<div class="th">${m.kind === "image" ? `<img src="${esc(m.url)}" alt="">` : `<video src="${esc(m.url)}#t=0.1" muted playsinline preload="metadata"></video><span class="pl">▶</span>`}<button class="x" data-slot="${slot}" data-id="${esc(m.id)}" aria-label="Ukloni">✕</button></div>`).join("");
+}
+function clearMedia(slot){ media[slot].forEach(m => URL.revokeObjectURL(m.url)); media[slot] = []; renderMedia(slot); }
+async function shareFiles(textId, items, hintId){
+  const text = $(textId).value, files = items.map(m => m.file), hint = $(hintId);
+  hint.textContent = "";
+  if (!files.length) return shareT(textId);
+  if (navigator.canShare && navigator.canShare({ files })) {
+    try { await navigator.share({ text, files }); hint.textContent = fmtScript("Ako je Viber primio samo prilog, nalepite i tekst (tipka Kopiraj)."); return; }
+    catch(e){ if (e.name === "AbortError") return; }
   }
-
-  function setVideoFile(file) {
-    if (!file || !file.type.startsWith("video/")) return;
-    if (state.currentVideoUrl && state.currentVideoUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(state.currentVideoUrl);
-    }
-    const url = URL.createObjectURL(file);
-    state.currentVideoUrl = url;
-    state.currentVideoName = file.name || "video.mp4";
-    const vid = document.getElementById("previewQVideo");
-    vid.src = url;
-    document.getElementById("videoCaption").textContent = `${state.currentVideoName} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
-    updateMediaGridVisibility();
-    refreshCurrentOutputIfMaster();
-    showToast("Video snimak je dodat");
-  }
-
-  function removeCurrentImage() {
-    state.currentImageDataUrl = null;
-    state.currentImageName = "";
-    document.getElementById("previewQImg").src = "";
-    document.getElementById("imgCaption").textContent = "";
-    updateMediaGridVisibility();
-    refreshCurrentOutputIfMaster();
-  }
-
-  function removeCurrentVideo() {
-    if (state.currentVideoUrl && state.currentVideoUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(state.currentVideoUrl);
-    }
-    state.currentVideoUrl = null;
-    state.currentVideoName = "";
-    const vid = document.getElementById("previewQVideo");
-    vid.pause();
-    vid.removeAttribute("src");
-    vid.load();
-    document.getElementById("videoCaption").textContent = "";
-    document.getElementById("fileInputQ").value = "";
-    updateMediaGridVisibility();
-    refreshCurrentOutputIfMaster();
-  }
-
-  function handleFileList(files) {
-    if (!files || !files.length) return;
-    for (const file of files) {
-      if (file.type && file.type.startsWith("image/")) {
-        setImageFile(file);
-      } else if (file.type && file.type.startsWith("video/")) {
-        setVideoFile(file);
-      }
-    }
-  }
-
-  function handleFileSelect(ev) {
-    handleFileList(ev.target.files);
-  }
-
-  document.addEventListener("paste", (e) => {
-    const items = e.clipboardData && e.clipboardData.items;
-    if (!items) return;
-    for (const item of items) {
-      if (item.type && item.type.startsWith("image/")) {
-        const blob = item.getAsFile();
-        if (blob) {
-          setImageFile(blob);
-          break;
-        }
-      }
-    }
+  try { await navigator.clipboard.writeText(text); } catch(e){}
+  files.forEach(f => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name || "prilog"; document.body.appendChild(a); a.click(); a.remove(); });
+  hint.textContent = fmtScript("Ovaj uređaj ne dozvoljava slanje priloga odavde. Tekst je kopiran, a prilozi su sačuvani na uređaju: dodajte ih ručno u Viber.");
+}
+function shareOut(){ return shareFiles("out", state.mode === "master" ? [...media.q, ...media.r] : media.r, "sh1"); }
+function shareN(){ return shareFiles("nout", media.n, "sh2"); }
+function toThumb(file, max = 720, q = 0.62){
+  return new Promise(res => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL("image/jpeg", q)); };
+    img.onerror = () => { URL.revokeObjectURL(u); res(null); };
+    img.src = u;
   });
-
-  const dz = document.getElementById("dropZoneQ");
-  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragover"); });
-  dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
-  dz.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dz.classList.remove("dragover");
-    handleFileList(e.dataTransfer && e.dataTransfer.files);
-  });
-
-  function startVoice(targetInputId, statusId) {
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const statusEl = document.getElementById(statusId);
-    if (!SpeechRec) {
-      statusEl.textContent = fmtScript("Glasovni diktat nije podržan u ovom pregledaču — ukucaj uput.");
-      return;
-    }
-    const rec = new SpeechRec();
-    rec.lang = "sr-RS";
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    statusEl.textContent = fmtScript("🎤 Slušam... izgovori uput.");
-    rec.onresult = (ev) => {
-      const transcript = ev.results[0][0].transcript;
-      const inp = document.getElementById(targetInputId);
-      inp.value = inp.value ? (inp.value + " " + transcript) : transcript;
-      statusEl.textContent = fmtScript("✓ Prepoznato: " + transcript);
-      if (targetInputId === "extraNote") {
-        if (state.outputMode === "master") buildContractorMessage();
-        else buildAnswerFromTemplate();
-      }
-      if (targetInputId === "voiceNoticeInput") buildNoticeMessage();
-    };
-    rec.onerror = () => {
-      statusEl.textContent = fmtScript("Nije uspelo snimanje glasa — proveri dozvolu mikrofona.");
-    };
-    rec.onend = () => {
-      setTimeout(() => {
-        if (statusEl.textContent.startsWith("🎤")) statusEl.textContent = "";
-      }, 1500);
-    };
-    rec.start();
-  }
-
-  async function copyMessage(textareaId, openViberHint) {
-    const val = document.getElementById(textareaId).value;
-    if (!val.trim()) return;
-    try {
-      await navigator.clipboard.writeText(val);
-    } catch (e) {
-      const ta = document.getElementById(textareaId);
-      ta.select();
-      document.execCommand("copy");
-    }
-    showToast(openViberHint ? "Kopirano za Viber!" : "Obaveštenje kopirano!");
-  }
-
-  function saveToLog() {
-    const bldg = document.getElementById("buildingSelect").value;
-    const q = (document.getElementById("questionInput").value || "").trim() || "(Pitanje bez unetog teksta)";
-    const ans = (document.getElementById("answerOutput").value || "").trim();
-    const tenant = (document.getElementById("tenantName").value || "").trim();
-    const master = (document.getElementById("masterName").value || "").trim();
-
-    state.log.unshift({
-      id: Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-      time: new Date().toLocaleString("sr-RS"),
-      building: bldg,
-      tenant,
-      master,
-      topic: (TEMPLATES.find(t => t.id === document.getElementById("topicSelect").value) || TEMPLATES[0]).name,
-      question: q,
-      answer: ans,
-      image: state.currentImageDataUrl || null,
-      videoName: state.currentVideoName || "",
-      answered: false
-    });
-    saveLogStorage();
-    renderLog();
-    showToast("Sačuvano u evidenciju");
-  }
-
-  function saveNoticeToLog() {
-    const bldg = document.getElementById("buildingSelect").value;
-    const raw = (document.getElementById("voiceNoticeInput").value || "").trim() || "(Obaveštenje)";
-    const out = (document.getElementById("noticeOutput").value || "").trim();
-
-    state.log.unshift({
-      id: Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-      time: new Date().toLocaleString("sr-RS"),
-      building: bldg,
-      tenant: "Obaveštenje",
-      master: "",
-      topic: "Obaveštenje",
-      question: raw,
-      answer: out,
-      image: state.currentImageDataUrl || null,
-      videoName: state.currentVideoName || "",
-      answered: true
-    });
-    saveLogStorage();
-    renderLog();
-    showToast("Obaveštenje sačuvano u evidenciju");
-  }
-
-  function toggleAnswered(id) {
-    const item = state.log.find(x => x.id === id);
-    if (!item) return;
-    item.answered = !item.answered;
-    saveLogStorage();
-    renderLog();
-  }
-
-  function deleteLogItem(id) {
-    state.log = state.log.filter(x => x.id !== id);
-    saveLogStorage();
-    renderLog();
-  }
-
-  function clearAllLog() {
-    if (!state.log.length) return;
-    state.log = [];
-    saveLogStorage();
-    renderLog();
-    showToast("Evidencija je obrisana");
-  }
-
-  function renderLogFilters() {
-    const ft = document.getElementById("logFilterTopic"), fs = document.getElementById("logFilterStatus");
-    const pt = ft.value, ps = fs.value;
-    ft.innerHTML = `<option value="__ALL__">${fmtScript("Sve teme")}</option>` +
-      [...TEMPLATES.map(t => t.name), "Obaveštenje"].map(n => `<option value="${n}">${fmtScript(n)}</option>`).join("");
-    fs.innerHTML = `<option value="__ALL__">${fmtScript("Svi statusi")}</option><option value="wait">${fmtScript("Čeka odgovor")}</option><option value="done">${fmtScript("Odgovoreno")}</option>`;
-    if (pt) ft.value = pt;
-    if (ps) fs.value = ps;
-  }
-
-  function renderLog() {
-    const filterBldg = document.getElementById("logFilterBuilding").value;
-    const filterTopic = document.getElementById("logFilterTopic").value || "__ALL__";
-    const filterStatus = document.getElementById("logFilterStatus").value || "__ALL__";
-    const container = document.getElementById("logList");
-    const items = state.log.filter(x =>
-      (filterBldg === "__ALL__" || x.building === filterBldg) &&
-      (filterTopic === "__ALL__" || x.topic === filterTopic) &&
-      (filterStatus === "__ALL__" || (filterStatus === "done") === Boolean(x.answered)));
-
-    if (!items.length) {
-      container.innerHTML = `<p class="hint">${fmtScript("Nema sačuvanih zapisa za izabrani filter.")}</p>`;
-      return;
-    }
-
-    container.innerHTML = items.map(item => `
-      <div class="log-item">
-        <div class="log-head">
-          <div>
-            <strong>${fmtScript(item.building)}</strong>
-            ${item.topic ? ` • <span class="badge">${fmtScript(item.topic)}</span>` : ""}
-            ${item.tenant ? ` • <span>${fmtScript(item.tenant)}</span>` : ""}
-            ${item.master ? ` • <span>${fmtScript("Majstor: " + item.master)}</span>` : ""}
-            <span style="color:var(--muted)"> • ${item.time}</span>
-          </div>
-          <span class="badge ${item.answered ? "badge-ok" : "badge-warn"}">
-            ${fmtScript(item.answered ? "Odgovoreno" : "Čeka odgovor")}
-          </span>
-        </div>
-        <div class="log-q">${fmtScript(item.question)}</div>
-        ${(item.image || item.videoName) ? `
-          <div class="log-media">
-            ${item.image ? `<img class="log-img" src="${item.image}" alt="Prilog" />` : ""}
-            ${item.videoName ? `<span class="badge">🎥 ${fmtScript(item.videoName)}</span>` : ""}
-          </div>
-        ` : ""}
-        <div class="log-a">${fmtScript(item.answer)}</div>
-        <div class="row-inline">
-          <button class="btn-outline btn-sm" onclick="copyTextDirect('${encodeURIComponent(item.answer)}')">${fmtScript("Kopiraj poruku")}</button>
-          <button class="btn-outline btn-sm" onclick="toggleAnswered('${item.id}')">${fmtScript(item.answered ? "Označi kao nepročitano" : "Označi odgovoreno")}</button>
-          <button class="btn-danger btn-sm" onclick="deleteLogItem('${item.id}')">${fmtScript("Obriši")}</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  async function copyTextDirect(encoded) {
-    const txt = decodeURIComponent(encoded);
-    try {
-      await navigator.clipboard.writeText(txt);
-    } catch (e) {}
-    showToast("Poruka kopirana");
-  }
-
-  function openBuildingModal() {
-    renderBuildingEditorList();
-    document.getElementById("buildingModal").classList.add("open");
-  }
-
-  function closeBuildingModal() {
-    document.getElementById("buildingModal").classList.remove("open");
-    renderBuildingSelect();
-    onBuildingChange();
-  }
-
-  function renderBuildingEditorList() {
-    const el = document.getElementById("buildingEditorList");
-    el.innerHTML = state.buildings.map((b, idx) => `
-      <div class="bldg-list-item">
-        <span>${fmtScript(b)}</span>
-        <button class="btn-danger btn-sm" onclick="removeBuilding(${idx})">${fmtScript("Obriši")}</button>
-      </div>
-    `).join("");
-  }
-
-  function addBuilding() {
-    const inp = document.getElementById("newBuildingInput");
-    const val = (inp.value || "").trim();
-    if (!val) return;
-    if (!state.buildings.includes(val)) {
-      state.buildings.push(val);
-      saveBuildings();
-      renderBuildingEditorList();
-      renderBuildingSelect();
-    }
-    inp.value = "";
-  }
-
-  function removeBuilding(idx) {
-    state.buildings.splice(idx, 1);
-    saveBuildings();
-    renderBuildingEditorList();
-    renderBuildingSelect();
-  }
-
-  function resetBuildingsDefault() {
-    state.buildings = [...DEFAULT_BUILDINGS];
-    saveBuildings();
-    renderBuildingSelect();
-    onBuildingChange();
-    showToast("Vraćen podrazumevani spisak zgrada");
-  }
-
-  function switchTab(name) {
-    ["qa", "notice", "log"].forEach(t => {
-      document.getElementById("tab-" + t).classList.toggle("active", t === name);
-    });
-    document.getElementById("tabBtn1").classList.toggle("active", name === "qa");
-    document.getElementById("tabBtn2").classList.toggle("active", name === "notice");
-    document.getElementById("tabBtn3").classList.toggle("active", name === "log");
-    if (name === "log") renderLog();
-  }
-
-  // Init
-  applyStaticLabels();
-  renderBuildingSelect();
-  renderTopicSelect("general");
-  renderNoticeTypeSelect();
-  renderLogFilters();
-  buildAnswerFromTemplate();
-  buildNoticeMessage();
-  renderLog();
-</script>
-</body>
-</html>
+}
+async function mediaForLog(items){
+  const im = items.find(m => m.kind === "image");
+  return { image: im ? await toThumb(im.file) : null, videoName: items.filter(m => m.kind === "video").map(m => m.name).join(", ") };
+}
+function addLog(o){ state.log.unshift({ id: Date.now() + "_" + Math.random().toString(36).slice(2,6), time: new Date().toLocaleString("sr-RS"), tenant:"", master:"", image:null, videoName:"", answered:false, ...o }); saveLogStore(); }
+async function saveLog(){
+  const tpl = curTpl(), md = await mediaForLog([...media.q, ...media.r]);
+  addLog({ building: $("bld").value, tenant: $("tenant").value.trim(), master: $("master").value.trim(), topic: tpl.name, question: $("q").value.trim() || "(Poruka bez teksta)", answer: $("out").value.trim(), ...md });
+  toast("Sačuvano u evidenciju");
+}
+async function saveNotice(){
+  const md = await mediaForLog(media.n);
+  addLog({ building: $("nbld").value, topic: "Obaveštenje", question: $("ntext").value.trim() || "(Obaveštenje)", answer: $("nout").value.trim(), ...md });
+  toast("Sačuvano u evidenciju");
+}
+function clearAll(){ clearMedia("q"); clearMedia("r"); $("sh1").textContent = ""; ["q","note","tenant","master"].forEach(i => $(i).value = ""); $("topic").value = "general"; state.mode = "tenant"; $("m_t").classList.add("on"); $("m_m").classList.remove("on"); gen(); scrollTo(0,0); }
+function renderLog(){
+  const fb=$("fb").value||"__ALL__", ft=$("ft").value||"__ALL__", fs=$("fs").value||"__ALL__";
+  const items = state.log.filter(x => (fb==="__ALL__"||x.building===fb) && (ft==="__ALL__"||x.topic===ft) && (fs==="__ALL__"||(fs==="done")===Boolean(x.answered)));
+  $("list").innerHTML = items.length ? items.map(x => `<div class="card">
+    <div><b>${esc(fmtScript(x.building))}</b> ${x.topic?`<span class="badge">${esc(fmtScript(x.topic))}</span>`:""} <span class="badge ${x.answered?"ok":"warn"}">${esc(fmtScript(x.answered?"Odgovoreno":"Čeka odgovor"))}</span></div>
+    <div class="hint">${esc(x.time)}${x.tenant?" • "+esc(x.tenant):""}${x.master?" • "+esc(fmtScript("Majstor: "+x.master)):""}</div>
+    <div class="q">${esc(fmtScript(x.question))}</div>${x.image?`<img class="p" src="${esc(x.image)}" alt="">`:""}
+    <div class="a">${esc(fmtScript(x.answer))}</div>
+    <div class="row"><button class="big sm" data-act="copy" data-id="${esc(x.id)}">${esc(fmtScript("📋 Kopiraj"))}</button><button class="big sm ghost" data-act="done" data-id="${esc(x.id)}">${esc(fmtScript(x.answered?"↩ Nije":"✓ Odgovoreno"))}</button><button class="big sm ghost" data-act="del" data-id="${esc(x.id)}" style="color:var(--bad);border-color:var(--bad)">🗑</button></div>
+  </div>`).join("") : `<p class="hint">${esc(fmtScript("Nema sačuvanih zapisa za izabrani filter."))}</p>`;
+}
+$("list").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const x = state.log.find(i => i.id === b.dataset.id); if (!x) return;
+  if (b.dataset.act === "copy") { try { await navigator.clipboard.writeText(x.answer); toast("Kopirano!"); } catch(err){ toast("Kopiranje nije uspelo"); } }
+  if (b.dataset.act === "done") { x.answered = !x.answered; saveLogStore(); renderLog(); }
+  if (b.dataset.act === "del") { if (b.dataset.armed) { state.log = state.log.filter(i => i.id !== x.id); saveLogStore(); renderLog(); } else { b.dataset.armed = "1"; b.textContent = fmtScript("Pritisnite opet"); } }
+});
+$("q").addEventListener("input", detect);
+["topic","bld","tenant","note","master"].forEach(i => $(i).addEventListener("input", gen));
+["ntype","nbld","ntext","nwhen"].forEach(i => $(i).addEventListener("input", genNotice));
+["fb","ft","fs"].forEach(i => $(i).addEventListener("change", renderLog));
+["q","r","n"].forEach(k => $("f_" + k).addEventListener("change", e => { addMedia(k, [...e.target.files]); e.target.value = ""; }));
+document.querySelectorAll(".thumbs").forEach(el => el.addEventListener("click", e => { const b = e.target.closest("button.x"); if (b) removeMedia(b.dataset.slot, b.dataset.id); }));
+document.addEventListener("paste", e => { const it = [...((e.clipboardData && e.clipboardData.items) || [])].find(i => i.type && i.type.startsWith("image/")); if (it) { const f = it.getAsFile(); if (f) addMedia($("sec_n").hidden ? "q" : "n", [f]); } });
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); const fl = [...((e.dataTransfer && e.dataTransfer.files) || [])]; if (fl.length) addMedia($("sec_n").hidden ? "q" : "n", fl); });
+labels(); fillSelects(); gen(); genNotice(); saveLogStore();
+if ("serviceWorker" in navigator && false) {}
+</script></body></html>
