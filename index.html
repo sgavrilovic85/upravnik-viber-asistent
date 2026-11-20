@@ -590,6 +590,9 @@
           <button type="button" class="btn-primary" onclick="startVoice('voiceNoticeInput', 'voiceStatusN')" id="btnVoiceN">🎤 Snimi glasom</button>
           <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('start_works')" id="btnPresetStart">Početak radova</button>
           <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('end_works')" id="btnPresetEnd">Završetak radova</button>
+          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('meeting')" id="btnPresetMeeting">Poziv na skupštinu</button>
+          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('payment')" id="btnPresetPay">Podsetnik za uplatu</button>
+          <button type="button" class="btn-outline btn-sm" onclick="applyQuickNotice('urgent')" id="btnPresetUrgent">Hitno</button>
         </div>
         <div class="voice-status" id="voiceStatusN"></div>
 
@@ -599,12 +602,7 @@
         <div class="row-2">
           <div>
             <label for="noticeType" id="lbl_notice_type">Vrsta obaveštenja</label>
-            <select id="noticeType" onchange="buildNoticeMessage()">
-              <option value="info">Opšte obaveštenje za stanare</option>
-              <option value="start">Početak radova (sa BZR napomenom)</option>
-              <option value="done">Završetak radova</option>
-              <option value="outage">Najava prekida (voda / struja / lift)</option>
-            </select>
+            <select id="noticeType" onchange="buildNoticeMessage()"></select>
           </div>
           <div>
             <label for="noticeWhen" id="lbl_notice_when">Datum / vreme (opciono)</label>
@@ -633,6 +631,8 @@
           <select id="logFilterBuilding" onchange="renderLog()" style="width:auto;">
             <option value="__ALL__">Sve zgrade</option>
           </select>
+          <select id="logFilterTopic" onchange="renderLog()" style="width:auto;"></select>
+          <select id="logFilterStatus" onchange="renderLog()" style="width:auto;"></select>
           <button class="btn-danger btn-sm" onclick="clearAllLog()" id="btnClearAllLog">Obriši evidenciju</button>
         </div>
       </h2>
@@ -689,61 +689,43 @@
     "Avrama Petronijevića 16"
   ];
 
+  const T = (id, group, name, kw, master, tech, body, urgent) => ({ id, group, name, keywords: kw ? kw.split("|") : [], master, tech, body, urgent: !!urgent });
   const TEMPLATES = [
-    {
-      id: "general",
-      name: "Opšti odgovor",
-      keywords: [],
-      body: "Poštovani{tenant}, primila sam poruku u vezi zgrade {building}. {note}Srdačan pozdrav, Upravnik."
-    },
-    {
-      id: "water",
-      name: "Voda / kanalizacija / curenje",
-      keywords: ["voda", "curi", "curenje", "kanalizacija", "cev", "ventil", "poplava", "mokro"],
-      body: "Poštovani{tenant}, u vezi prijave curenja/vode u zgradi {building} — {note}situacija je evidentirana i u toku je postupanje. Upravnik."
-    },
-    {
-      id: "lift",
-      name: "Lift / servis",
-      keywords: ["lift", "kabina", "vrata lifta", "zaglavio", "ne radi lift"],
-      body: "Poštovani{tenant}, u vezi rada lifta u zgradi {building} — {note}obavešten je ovlašćeni servis za liftove. Bezbednost stanara je na prvom mestu. Upravnik."
-    },
-    {
-      id: "electric",
-      name: "Elektro / rasveta / osigurači",
-      keywords: ["struja", "svetlo", "sijalica", "rasveta", "osigurac", "osigurač", "tabla", "mrak"],
-      body: "Poštovani{tenant}, u vezi elektro-instalacija/rasvete u zgradi {building} — {note}zabeleženo je i prosleđeno električaru. Upravnik."
-    },
-    {
-      id: "roof",
-      name: "Krov / prokišnjavanje",
-      keywords: ["krov", "prokisnjava", "prokišnjava", "crep", "lim", "tavan", "vlaga"],
-      body: "Poštovani{tenant}, u vezi krova i radova na zgradi {building} — {note}evidencija je ažurirana. Upravnik."
-    },
-    {
-      id: "payment",
-      name: "Račun / uplata / poziv na broj",
-      keywords: ["racun", "račun", "uplata", "uplatnica", "poziv na broj", "proknjizeno", "proknjiženo", "qr", "pin"],
-      body: "Poštovani{tenant}, za zgradu {building} — {note}molimo da na uplatnici uvek upišete tačan poziv na broj kako bi uplata bila ispravno proknjižena. Upravnik."
-    },
-    {
-      id: "debt",
-      name: "Dugovanje / opomena",
-      keywords: ["dug", "dugovanje", "opomena", "rata", "zaostatak"],
-      body: "Poštovani{tenant}, u vezi stanja zaduženja za zgradu {building} — {note}molimo vas da proverite poslednji izvod/račun ili da mi se javite radi usaglašavanja stanja. Upravnik."
-    },
-    {
-      id: "meeting",
-      name: "Skupština stanara / glasanje",
-      keywords: ["skupstina", "skupština", "sastanak", "glasanje", "odluka", "zapisnik"],
-      body: "Poštovani{tenant}, u vezi aktivnosti skupštine stambene zajednice {building} — {note}sva obaveštenja i odluke biće blagovremeno objavljeni i prosleđeni stanarima. Upravnik."
-    },
-    {
-      id: "works",
-      name: "Radovi / krečenje / čišćenje",
-      keywords: ["radovi", "majstor", "krecenje", "krečenje", "ciscenje", "čišćenje", "ulaz", "hodnik", "gotovi", "zavrseni", "završeni"],
-      body: "Poštovani{tenant}, u vezi radova u zgradi {building} — {note}hvala na javljanju i saradnji. Upravnik."
-    }
+    T("general", "Opšte", "Opšti odgovor", "", "", false, "Poštovani{tenant}, primila sam poruku u vezi zgrade {building}. {note}Srdačan pozdrav, Upravnik."),
+
+    T("water", "Kvarovi i instalacije", "Voda / kanalizacija / curenje", "voda|vode|vodu|curi|curenj|kanalizacij|cev|ventil|poplav|mokr|slavin|odvod|zapusen|smrdi", "vodoinstalater", true, "Poštovani{tenant}, u vezi prijave curenja/vode u zgradi {building} — {note}situacija je evidentirana i u toku je postupanje. Upravnik."),
+    T("lift", "Kvarovi i instalacije", "Lift / servis", "lift|kabin|zaglav", "lift servis", true, "Poštovani{tenant}, u vezi rada lifta u zgradi {building} — {note}obavešten je ovlašćeni servis za liftove. Bezbednost stanara je na prvom mestu. Upravnik."),
+    T("electric", "Kvarovi i instalacije", "Elektro / rasveta / osigurači", "struja|struje|svetl|sijalic|rasvet|osigurac|mrak|kratak spoj|uticnic|razvodn", "električar", true, "Poštovani{tenant}, u vezi elektro-instalacija/rasvete u zgradi {building} — {note}zabeleženo je i prosleđeno električaru. Upravnik."),
+    T("heating", "Kvarovi i instalacije", "Grejanje / radijatori", "grejanj|toplan|radijator|kalorimetar|ne greje", "servis za grejanje", true, "Poštovani{tenant}, u vezi grejanja u zgradi {building} — {note}prijava je evidentirana i prosleđena nadležnoj službi. Upravnik."),
+    T("roof", "Kvarovi i instalacije", "Krov / prokišnjavanje", "krov|prokisnjav|crep|oluk|vlag|kisa", "krovopokrivač / limar", true, "Poštovani{tenant}, u vezi krova i prokišnjavanja zgrade {building} — {note}evidencija je ažurirana. Upravnik."),
+    T("facade", "Kvarovi i instalacije", "Fasada / stepenište / balkoni", "fasad|malter|pukotin|prsl|stepenist|stepenic|balkon|terasa|ograda", "građevinski izvođač", true, "Poštovani{tenant}, u vezi stanja fasade/stepeništa/balkona zgrade {building} — {note}prijava je evidentirana, a o daljim koracima biće obavešteni stanari. Upravnik."),
+    T("doors", "Kvarovi i instalacije", "Ulazna vrata / interfon / brava", "interfon|brava|bravu|kljuc|kvaka|vrata|zvono|zakljuc", "bravar / majstor za interfon", true, "Poštovani{tenant}, u vezi ulaznih vrata/interfona/brave u zgradi {building} — {note}prijava je evidentirana i prosleđena majstoru. Upravnik."),
+    T("pest", "Kvarovi i instalacije", "Štetočine / deratizacija", "pacov|mis$|misev|bubasvab|stetocin|glodar|mrav|insekt|gnezd|golub|deratizacij|dezinsekcij|stenic", "služba za deratizaciju i dezinsekciju", true, "Poštovani{tenant}, u vezi prijave štetočina u zgradi {building} — {note}prijava je evidentirana i biće zatražena intervencija ovlašćene službe. Upravnik."),
+    T("works", "Kvarovi i instalacije", "Radovi / krečenje / popravke", "radov|krecen|molersk|popravk|renoviranj", "majstor", true, "Poštovani{tenant}, u vezi radova u zgradi {building} — {note}hvala na javljanju i saradnji. Upravnik."),
+
+    T("cleaning", "Čistoća i kućni red", "Čišćenje zajedničkih prostorija", "ciscen|ocisc|ocist|cistac|prljav|pometen|higijen", "služba za čišćenje", true, "Poštovani{tenant}, u vezi čišćenja zajedničkih prostorija zgrade {building} — {note}primedba je evidentirana i prosleđena. Upravnik."),
+    T("trash", "Čistoća i kućni red", "Smeće / kontejneri / glomazni otpad", "smec|kontejner|otpad|kanta|glomazn|djubr|namestaj", "komunalno preduzeće", false, "Poštovani{tenant}, u vezi smeća/kontejnera u zgradi {building} — {note}molimo da se otpad odlaže isključivo na predviđena mesta, a glomazni otpad ne ostavlja u ulazu. Upravnik."),
+    T("noise", "Čistoća i kućni red", "Buka / komšijski odnosi / kućni red", "buk|galam|glasn|muzik|komsij|ometa|nocu|nocni", "", false, "Poštovani{tenant}, u vezi prijave buke/ometanja u zgradi {building} — {note}molimo sve stanare da poštuju kućni red i mir u zgradi, naročito u večernjim i noćnim satima. Upravnik."),
+    T("parking", "Čistoća i kućni red", "Parking / vozila / kolica u ulazu", "parking|parkir|auto$|automobil|vozil|bicikl|kolica|blokir", "", false, "Poštovani{tenant}, u vezi parkiranja i odlaganja stvari u zajedničkim prostorima zgrade {building} — {note}molimo da se prolazi, ulazi i stepeništa ne blokiraju, zbog bezbednosti stanara. Upravnik."),
+    T("pets", "Čistoća i kućni red", "Kućni ljubimci", "ljubimc|pas$|psa$|psi$|macka|macke|laj|izmet", "", false, "Poštovani{tenant}, u vezi kućnih ljubimaca u zgradi {building} — {note}molimo vlasnike da vode računa o čistoći i miru zajedničkih prostora. Upravnik."),
+    T("storage", "Čistoća i kućni red", "Podrum / ostave / tavan", "podrum|ostav|tavan", "", false, "Poštovani{tenant}, u vezi podruma/ostava/tavana zgrade {building} — {note}molimo da se zajednički prostori ne koriste za odlaganje zapaljivih i nepotrebnih stvari. Upravnik."),
+    T("damage", "Čistoća i kućni red", "Oštećenje / vandalizam", "ostecen|vandal|razbij|grafit|polomlj|ukrad|kradj", "", false, "Poštovani{tenant}, u vezi oštećenja u zgradi {building} — {note}prijava je evidentirana. Ako postoji sumnja na krađu ili namerno oštećenje, preporučuje se prijava policiji. Upravnik."),
+
+    T("payment", "Novac i obračun", "Račun / uplata / poziv na broj", "racun|uplat|uplatnic|poziv na broj|proknjiz|qr", "", false, "Poštovani{tenant}, za zgradu {building} — {note}molimo da na uplatnici uvek upišete tačan poziv na broj kako bi uplata bila ispravno proknjižena. Upravnik."),
+    T("debt", "Novac i obračun", "Dugovanje / opomena", "dugovan|dug$|opomen|zaostatak|rata$|neplacen", "", false, "Poštovani{tenant}, u vezi stanja zaduženja za zgradu {building} — {note}molimo vas da proverite poslednji izvod/račun ili da mi se javite radi usaglašavanja stanja. Upravnik."),
+    T("calc", "Novac i obračun", "Pitanje o obračunu / iznosu", "obracun|iznos|poskupl|povecan|veci$|veca$|vece$|razumem|objasni|kvadratur|rezervni fond|cena|koliko treba", "", false, "Poštovani{tenant}, u vezi obračuna za zgradu {building} — {note}pregled zaduženja i uplata za vaš stan možete dobiti od upravnika. Upravnik."),
+    T("funds", "Novac i obračun", "Vanredni troškovi / prikupljanje sredstava", "vanredn|prikupljan|sredstav|kolekt|dodatn", "", false, "Poštovani{tenant}, u vezi vanrednih troškova/prikupljanja sredstava u zgradi {building} — {note}o visini i načinu prikupljanja biće obavešteni svi stanari. Upravnik."),
+    T("receipt", "Novac i obračun", "Potvrda o uplati / stanje računa", "potvrd|potvrda o uplati|uplatila sam|uplatio sam|dokaz o uplati|saldo|izvod|stanje racuna|stanje duga", "", false, "Poštovani{tenant}, u vezi potvrde o uplati/stanju računa za zgradu {building} — {note}potvrdu ili pregled stanja možete dobiti od upravnika na zahtev. Upravnik."),
+
+    T("meeting", "Skupština i dokumenta", "Skupština stanara / glasanje", "skupstin|sastanak|glasanj|odluk|zapisnik", "", false, "Poštovani{tenant}, u vezi aktivnosti skupštine stambene zajednice {building} — {note}sva obaveštenja i odluke biće blagovremeno objavljeni i prosleđeni stanarima. Upravnik."),
+    T("documents", "Skupština i dokumenta", "Dokumenta / uverenja / ugovori", "dokument|uverenj|ugovor|kopij|fotokopij", "", false, "Poštovani{tenant}, u vezi dokumentacije zgrade {building} — {note}molimo da se javite upravniku radi dogovora o preuzimanju. Upravnik."),
+    T("ownership", "Skupština i dokumenta", "Useljenje / iseljenje / novi vlasnik", "uselj|iselj|novi vlasnik|kupio|prodaj|zakup|podstanar|vlasnik", "", false, "Poštovani{tenant}, u vezi promene vlasnika/stanara u zgradi {building} — {note}molimo da upravniku dostavite podatke (ime, broj stana, kontakt) radi ažuriranja evidencije. Upravnik."),
+    T("contact", "Skupština i dokumenta", "Kontakt / radno vreme", "kontakt|broj telefona|telefon upravnika|radno vreme|mejl|email", "", false, "Poštovani{tenant}, u vezi zgrade {building} — {note}upravnika možete kontaktirati porukom u Viber grupi ili telefonom. Upravnik."),
+
+    T("emergency", "Hitno", "HITNO: gas / požar / opasnost", "hitn|gas$|gasa|pozar|dim$|eksplozij|opasnost|strujni udar", "", false, "HITNO — {tenant}zgrada {building}. {note}Ako postoji neposredna opasnost po život, odmah pozovite 112 (hitne službe), 193 (vatrogasci) ili 194 (hitna pomoć). Ako osetite miris gasa: otvorite prozore, ne palite svetlo i ne koristite otvoren plamen, napustite prostor i pozovite hitne službe. Upravnik.", true),
+
+    T("suggestion", "Ostalo", "Predlog / primedba / žalba", "predlog|zalb|primedb|nezadovoljn|prituzb|pohval", "", false, "Poštovani{tenant}, hvala na poruci u vezi zgrade {building}. {note}Vaš predlog/primedba je evidentiran i biće razmotren, a po potrebi uvršten na dnevni red sastanka stanara. Upravnik."),
+    T("insurance", "Ostalo", "Šteta / osiguranje", "osiguranj|stet|polisa", "", false, "Poštovani{tenant}, u vezi štete u zgradi {building} — {note}molimo da sačuvate fotografije i opis štete radi eventualne prijave osiguranju. Upravnik.")
   ];
 
   const UI_STRINGS = {
@@ -939,6 +921,8 @@
     applyStaticLabels();
     renderBuildingSelect();
     renderTopicSelect();
+    renderNoticeTypeSelect();
+    renderLogFilters();
     if (state.outputMode === "master") buildContractorMessage();
     else buildAnswerFromTemplate();
     buildNoticeMessage();
@@ -980,6 +964,10 @@
     document.getElementById("btnVoiceN").textContent = s.btnVoiceN;
     document.getElementById("btnPresetStart").textContent = s.btnPresetStart;
     document.getElementById("btnPresetEnd").textContent = s.btnPresetEnd;
+    document.getElementById("btnPresetMeeting").textContent = fmtScript("Poziv na skupštinu");
+    document.getElementById("btnPresetPay").textContent = fmtScript("Podsetnik za uplatu");
+    document.getElementById("btnPresetUrgent").textContent = fmtScript("Hitno");
+    document.getElementById("hint_notice").textContent = fmtScript("Na primer: „Počinje da se radi krov u ponedeljak u 8 časova“, „Sastanak stanara u petak u 18 časova“ ili „Podsećamo na uplatu do 25. u mesecu“.");
     document.getElementById("lbl_notice_raw").textContent = s.lblNoticeRaw;
     document.getElementById("lbl_notice_type").textContent = s.lblNoticeType;
     document.getElementById("lbl_notice_when").textContent = s.lblNoticeWhen;
@@ -1032,11 +1020,18 @@
     const sel = document.getElementById("topicSelect");
     const current = selectedId || sel.value || "general";
     sel.innerHTML = "";
-    TEMPLATES.forEach(t => {
-      const opt = document.createElement("option");
-      opt.value = t.id;
-      opt.textContent = fmtScript(t.name);
-      sel.appendChild(opt);
+    const groups = {};
+    TEMPLATES.forEach(t => { (groups[t.group] = groups[t.group] || []).push(t); });
+    Object.keys(groups).forEach(g => {
+      const og = document.createElement("optgroup");
+      og.label = fmtScript(g);
+      groups[g].forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.id;
+        opt.textContent = fmtScript(t.name);
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
     });
     sel.value = current;
   }
@@ -1047,18 +1042,29 @@
     buildNoticeMessage();
   }
 
-  function autoDetectTopic() {
-    const raw = (document.getElementById("questionInput").value || "").toLowerCase();
-    const normalized = raw
-      .replace(/č/g, "c").replace(/ć/g, "c")
-      .replace(/š/g, "s").replace(/ž/g, "z").replace(/đ/g, "dj");
+  function normTxt(t) {
+    return (t || "").toLowerCase().replace(/[čć]/g, "c").replace(/š/g, "s").replace(/ž/g, "z").replace(/đ/g, "dj").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  }
 
-    let matched = TEMPLATES[0];
+  function scoreTemplate(tpl, txt, words) {
+    let n = 0;
+    for (const k of tpl.keywords) {
+      const exact = k.endsWith("$");
+      const kw = normTxt(k.replace("$", ""));
+      const hit = kw.includes(" ") ? (" " + txt).includes(" " + kw) : words.some(w => exact ? w === kw : w.startsWith(kw));
+      if (hit) n++;
+    }
+    return n;
+  }
+
+  function autoDetectTopic() {
+    const txt = normTxt(document.getElementById("questionInput").value);
+    const words = txt.split(" ");
+    let matched = TEMPLATES[0], best = 0;
     for (const tpl of TEMPLATES.slice(1)) {
-      if (tpl.keywords.some(kw => normalized.includes(kw))) {
-        matched = tpl;
-        break;
-      }
+      let n = scoreTemplate(tpl, txt, words);
+      if (n && tpl.urgent) n += 5;
+      if (n > best) { best = n; matched = tpl; }
     }
     document.getElementById("topicSelect").value = matched.id;
     document.getElementById("detectedTopicBadge").textContent = fmtScript(`Tema: ${matched.name}`);
@@ -1081,6 +1087,7 @@
     const topicId = document.getElementById("topicSelect").value || "general";
     const tpl = TEMPLATES.find(t => t.id === topicId) || TEMPLATES[0];
     document.getElementById("detectedTopicBadge").textContent = fmtScript(`Tema: ${tpl.name}`);
+    document.getElementById("masterName").placeholder = fmtScript(tpl.master ? `npr. ${tpl.master}` : "npr. vodoinstalater / lift servis / električar");
 
     const tenantRaw = (document.getElementById("tenantName").value || "").trim();
     const noteRaw = (document.getElementById("extraNote").value || "").trim();
@@ -1101,6 +1108,7 @@
     document.getElementById("modeBadge").textContent = fmtScript("Za majstora / servis");
 
     const bldg = document.getElementById("buildingSelect").value || "zgrada";
+    const tpl = TEMPLATES.find(t => t.id === document.getElementById("topicSelect").value) || TEMPLATES[0];
     const master = (document.getElementById("masterName").value || "").trim();
     const tenant = (document.getElementById("tenantName").value || "").trim();
     const q = (document.getElementById("questionInput").value || "").trim();
@@ -1109,16 +1117,20 @@
     const attachments = [];
     if (state.currentImageDataUrl) attachments.push(state.currentImageName || "slika");
     if (state.currentVideoUrl) attachments.push(state.currentVideoName || "video snimak");
-    const mediaLine = attachments.length ? `\nPrilozi: ${attachments.join(", ")}` : "";
+    const mediaLine = attachments.length ? `Prilozi: ${attachments.join(", ")}` : "";
+
+    const closing = tpl.tech
+      ? "Molim za informaciju kada možete izaći na teren. Upravnik."
+      : "Molim za informaciju ili mišljenje. Upravnik.";
 
     const lines = [
-      `PRIJAVA KVAR / RADOVI — ${bldg}`,
-      master ? `Izvođač / servis: ${master}` : "",
+      `PRIJAVA — ${tpl.name} — ${bldg}`,
+      master ? `Prosleđuje se: ${master}` : "",
       tenant ? `Stanar / stan: ${tenant}` : "",
       q ? `Opis prijave: ${q}` : "",
       note ? `Napomena upravnika: ${note}` : "",
-      mediaLine ? mediaLine.trim() : "",
-      `Molim za informaciju kada možete izaći na teren. Upravnik.`
+      mediaLine,
+      closing
     ].filter(Boolean);
 
     document.getElementById("answerOutput").value = fmtScript(lines.join("\n"));
@@ -1128,35 +1140,48 @@
     if (state.outputMode === "master") buildContractorMessage();
   }
 
+  const NOTICES = {
+    info:   { label: "Opšte obaveštenje za stanare", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, ${r || "molimo da obratite pažnju na obaveštenje upravnika."}. Upravnik.`.replace("..", ".") },
+    start:  { label: "Početak radova (sa BZR napomenom)", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, obaveštavamo vas da počinju radovi${r ? ": " + r : ""}. Radovi se izvode uz poštovanje propisanih mera bezbednosti i zdravlja na radu (BZR). Molimo za oprez i razumevanje. Upravnik.` },
+    done:   { label: "Završetak radova", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, obaveštavamo vas da su radovi završeni${r ? ": " + r : ""}. Hvala na strpljenju i saradnji. Upravnik.` },
+    outage: { label: "Najava prekida (voda / struja / lift / grejanje)", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, najavljujemo privremeni prekid${r ? ": " + r : ""}. Molimo da blagovremeno prilagodite svoje obaveze. Upravnik.` },
+    fixed:  { label: "Kvar je otklonjen", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, obaveštavamo vas da je kvar otklonjen${r ? ": " + r : ""}. Hvala na strpljenju. Upravnik.` },
+    meeting:{ label: "Poziv na skupštinu / sastanak stanara", f: (b, w, r) => `Poštovani stanari zgrade ${b}, pozivamo vas na sastanak stanara${w}. ${r ? "Dnevni red: " + r + ". " : ""}Vaše prisustvo je važno, jer se o pitanjima zgrade odlučuje zajednički. Upravnik.` },
+    payment:{ label: "Podsetnik za uplatu", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, podsećamo vas na redovno izmirivanje obaveza prema stambenoj zajednici${r ? ": " + r : ""}. Molimo da pri uplati navedete tačan poziv na broj. Upravnik.` },
+    cleaning:{ label: "Čišćenje / dezinfekcija / deratizacija", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, obaveštavamo vas o planiranoj aktivnosti: ${r || "čišćenje / dezinfekcija / deratizacija"}. Molimo za razumevanje i da po potrebi omogućite pristup prostorijama. Upravnik.` },
+    order:  { label: "Kućni red (buka, smeće, parking, ljubimci)", f: (b, w, r) => `Poštovani stanari zgrade ${b}${w}, molimo vas da poštujete kućni red i čistoću zajedničkih prostora${r ? ": " + r : ""}. Hvala na razumevanju. Upravnik.` },
+    urgent: { label: "Hitno upozorenje", f: (b, w, r) => `HITNO — stanari zgrade ${b}${w}: ${r || "molimo da obratite pažnju na hitno obaveštenje upravnika"}. U slučaju neposredne opasnosti odmah pozovite 112. Upravnik.` }
+  };
+
+  function renderNoticeTypeSelect() {
+    const sel = document.getElementById("noticeType");
+    const cur = sel.value || "info";
+    sel.innerHTML = "";
+    Object.keys(NOTICES).forEach(k => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = fmtScript(NOTICES[k].label);
+      sel.appendChild(opt);
+    });
+    sel.value = cur;
+  }
+
   function buildNoticeMessage() {
     const bldg = document.getElementById("buildingSelect").value || "zgrada";
     const raw = (document.getElementById("voiceNoticeInput").value || "").trim();
-    const type = document.getElementById("noticeType").value;
+    const type = document.getElementById("noticeType").value || "info";
     const when = (document.getElementById("noticeWhen").value || "").trim();
     const whenTxt = when ? ` (${when})` : "";
-
-    let text = "";
-    if (type === "start") {
-      text = `Poštovani stanari zgrade ${bldg}${whenTxt}, obaveštavamo vas da počinju radovi${raw ? ": " + raw : ""}. Radovi se izvode uz poštovanje propisanih mera bezbednosti i zdravlja na radu (BZR). Molimo za oprez i razumevanje. Upravnik.`;
-    } else if (type === "done") {
-      text = `Poštovani stanari zgrade ${bldg}${whenTxt}, obaveštavamo vas da su radovi završeni${raw ? ": " + raw : ""}. Hvala na strpljenju i saradnji. Upravnik.`;
-    } else if (type === "outage") {
-      text = `Poštovani stanari zgrade ${bldg}${whenTxt}, najavljujemo privremeni prekid${raw ? ": " + raw : ""}. Molimo da blagovremeno prilagodite svoje obaveze. Upravnik.`;
-    } else {
-      text = `Poštovani stanari zgrade ${bldg}${whenTxt}, ${raw || "molimo da obratite pažnju na obaveštenje upravnika."}. Upravnik.`.replace("..", ".");
-    }
-    document.getElementById("noticeOutput").value = fmtScript(text);
+    const n = NOTICES[type] || NOTICES.info;
+    document.getElementById("noticeOutput").value = fmtScript(n.f(bldg, whenTxt, raw));
   }
 
   function applyQuickNotice(kind) {
     const input = document.getElementById("voiceNoticeInput");
-    if (kind === "start_works") {
-      document.getElementById("noticeType").value = "start";
-      if (!input.value.trim()) input.value = "početak radova u zgradi";
-    } else if (kind === "end_works") {
-      document.getElementById("noticeType").value = "done";
-      if (!input.value.trim()) input.value = "radovi su uspešno završeni";
-    }
+    const map = { start_works: "start", end_works: "done", meeting: "meeting", payment: "payment", urgent: "urgent" };
+    document.getElementById("noticeType").value = map[kind] || "info";
+    if (kind === "start_works" && !input.value.trim()) input.value = "početak radova u zgradi";
+    if (kind === "end_works" && !input.value.trim()) input.value = "radovi su uspešno završeni";
     buildNoticeMessage();
   }
 
@@ -1347,6 +1372,7 @@
       building: bldg,
       tenant,
       master,
+      topic: (TEMPLATES.find(t => t.id === document.getElementById("topicSelect").value) || TEMPLATES[0]).name,
       question: q,
       answer: ans,
       image: state.currentImageDataUrl || null,
@@ -1369,6 +1395,7 @@
       building: bldg,
       tenant: "Obaveštenje",
       master: "",
+      topic: "Obaveštenje",
       question: raw,
       answer: out,
       image: state.currentImageDataUrl || null,
@@ -1402,10 +1429,25 @@
     showToast("Evidencija je obrisana");
   }
 
+  function renderLogFilters() {
+    const ft = document.getElementById("logFilterTopic"), fs = document.getElementById("logFilterStatus");
+    const pt = ft.value, ps = fs.value;
+    ft.innerHTML = `<option value="__ALL__">${fmtScript("Sve teme")}</option>` +
+      [...TEMPLATES.map(t => t.name), "Obaveštenje"].map(n => `<option value="${n}">${fmtScript(n)}</option>`).join("");
+    fs.innerHTML = `<option value="__ALL__">${fmtScript("Svi statusi")}</option><option value="wait">${fmtScript("Čeka odgovor")}</option><option value="done">${fmtScript("Odgovoreno")}</option>`;
+    if (pt) ft.value = pt;
+    if (ps) fs.value = ps;
+  }
+
   function renderLog() {
     const filterBldg = document.getElementById("logFilterBuilding").value;
+    const filterTopic = document.getElementById("logFilterTopic").value || "__ALL__";
+    const filterStatus = document.getElementById("logFilterStatus").value || "__ALL__";
     const container = document.getElementById("logList");
-    const items = state.log.filter(x => filterBldg === "__ALL__" || x.building === filterBldg);
+    const items = state.log.filter(x =>
+      (filterBldg === "__ALL__" || x.building === filterBldg) &&
+      (filterTopic === "__ALL__" || x.topic === filterTopic) &&
+      (filterStatus === "__ALL__" || (filterStatus === "done") === Boolean(x.answered)));
 
     if (!items.length) {
       container.innerHTML = `<p class="hint">${fmtScript("Nema sačuvanih zapisa za izabrani filter.")}</p>`;
@@ -1417,6 +1459,7 @@
         <div class="log-head">
           <div>
             <strong>${fmtScript(item.building)}</strong>
+            ${item.topic ? ` • <span class="badge">${fmtScript(item.topic)}</span>` : ""}
             ${item.tenant ? ` • <span>${fmtScript(item.tenant)}</span>` : ""}
             ${item.master ? ` • <span>${fmtScript("Majstor: " + item.master)}</span>` : ""}
             <span style="color:var(--muted)"> • ${item.time}</span>
@@ -1513,6 +1556,8 @@
   applyStaticLabels();
   renderBuildingSelect();
   renderTopicSelect("general");
+  renderNoticeTypeSelect();
+  renderLogFilters();
   buildAnswerFromTemplate();
   buildNoticeMessage();
   renderLog();
