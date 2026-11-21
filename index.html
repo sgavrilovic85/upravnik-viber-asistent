@@ -105,11 +105,21 @@ img.p{max-width:100%;border-radius:10px;margin:6px 0}
  <select id="ft" aria-label="Tema" style="margin-top:8px"></select>
  <select id="fs" aria-label="Status" style="margin-top:8px"></select>
  <div id="list"></div>
+ <div class="card" id="syncBox" style="margin-top:26px">
+  <b data-t="☁ Sinhronizacija telefon / računar">☁ Sinhronizacija telefon / računar</b>
+  <div class="hint" id="syncSt"></div>
+  <input id="syncUrl" autocomplete="off" data-p="Adresa programa (https://script.google.com/...)" placeholder="Adresa programa (https://script.google.com/...)" style="margin:8px 0">
+  <input id="syncSifra" autocomplete="off" data-p="Šifra (ista na svim uređajima)" placeholder="Šifra (ista na svim uređajima)" style="margin:8px 0">
+  <button class="big sm" onclick="connectSync()" data-t="🔗 Poveži">🔗 Poveži</button>
+  <button class="big sm ghost" onclick="syncNow()" data-t="🔄 Sinhronizuj sada">🔄 Sinhronizuj sada</button>
+  <button class="big sm ghost" onclick="disconnectSync()" data-t="Prekini vezu">Prekini vezu</button>
+ </div>
 </section>
 </main>
 <input type="file" id="f_q" accept="image/*,video/*" multiple hidden>
 <input type="file" id="f_r" accept="image/*,video/*" multiple hidden>
 <input type="file" id="f_n" accept="image/*,video/*" multiple hidden>
+<div id="conf" hidden style="position:fixed;inset:0;background:#162033ee;z-index:30;padding:20px;overflow:auto"><div class="card" id="confBox"></div></div>
 <div id="toast"></div>
 <script>
 
@@ -239,9 +249,10 @@ const state = { script: LS.get(KEYS.script) || "lat", mode: "tenant", buildings:
 try { const b = JSON.parse(LS.get(KEYS.buildings) || "null"); state.buildings = Array.isArray(b) && b.length ? b : [...DEFAULT_BUILDINGS]; } catch(e){ state.buildings = [...DEFAULT_BUILDINGS]; }
 try { const l = JSON.parse(LS.get(KEYS.log) || "null"); state.log = Array.isArray(l) ? l : []; } catch(e){ state.log = []; }
 
+function updCount(){ $("cnt").textContent = state.log.length ? "(" + state.log.length + ")" : ""; }
 function saveLogStore(){
   if(!LS.set(KEYS.log, JSON.stringify(state.log))) LS.set(KEYS.log, JSON.stringify(state.log.map(x => ({...x, image: null}))));
-  $("cnt").textContent = state.log.length ? "(" + state.log.length + ")" : "";
+  updCount(); touch();
 }
 function toast(m){ const t=$("toast"); t.textContent=fmtScript(m); t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
 function curTpl(){ return TEMPLATES.find(t => t.id === $("topic").value) || TEMPLATES[0]; }
@@ -408,11 +419,91 @@ $("q").addEventListener("input", detect);
 ["topic","bld","tenant","note","master"].forEach(i => $(i).addEventListener("input", gen));
 ["ntype","nbld","ntext","nwhen"].forEach(i => $(i).addEventListener("input", genNotice));
 ["fb","ft","fs"].forEach(i => $(i).addEventListener("change", renderLog));
+/* ===== Sinhronizacija (Google Apps Script) ===== */
+KEYS.sync = "upravnik_viber_sync_v1"; KEYS.izm = "upravnik_viber_izm_v1";
+let SY = null; try { SY = JSON.parse(LS.get(KEYS.sync) || "null"); } catch(e){}
+let IZM = Number(LS.get(KEYS.izm)) || 0, spT = null, konf = false, confArmed = "";
+const syncOn = () => Boolean(SY && SY.sifra);
+const saveSY = () => LS.set(KEYS.sync, JSON.stringify(SY));
+function touch(){ IZM = Date.now(); LS.set(KEYS.izm, String(IZM)); planSync(); }
+function syncStatus(msg){
+  $("syncSt").textContent = fmtScript(msg || (syncOn() ? "Povezano" + (SY.up ? ". Poslednja sinhronizacija: " + new Date(SY.up).toLocaleString("sr-RS") : "") : "Nije povezano. Upišite šifru i pritisnite Poveži."));
+}
+function planSync(){ clearTimeout(spT); if (!syncOn() || konf) return; spT = setTimeout(() => syncUp(), 15000); }
+async function syncUp(force){
+  if (!syncOn() || (konf && !force)) return false;
+  const izm = IZM;
+  try {
+    const j = await (await fetch(SY.url, { method: "POST", body: JSON.stringify({ app: "viber", sifra: SY.sifra, podaci: { izm, buildings: state.buildings, log: state.log }, osnova: SY.osn || 0, force: !!force }) })).json();
+    if (j.ok) { SY.osn = izm; SY.up = Date.now(); saveSY(); syncStatus(); return true; }
+    if (j.konflikt) { konf = true; showConflict(j.serverIzm); return false; }
+    syncStatus(j.poruka || "Sinhronizacija nije uspela.");
+  } catch(e){ syncStatus("Nema veze sa internetom. Pokušaću ponovo."); }
+  return false;
+}
+async function syncDown(){
+  try { const j = await (await fetch(SY.url + "?app=viber&akcija=vrati&sifra=" + encodeURIComponent(SY.sifra))).json(); return j.ok && j.podaci ? j.podaci : null; } catch(e){ return null; }
+}
+function applyRemote(p){
+  if (Array.isArray(p.buildings) && p.buildings.length) state.buildings = p.buildings;
+  state.log = Array.isArray(p.log) ? p.log : [];
+  LS.set(KEYS.buildings, JSON.stringify(state.buildings));
+  if (!LS.set(KEYS.log, JSON.stringify(state.log))) LS.set(KEYS.log, JSON.stringify(state.log.map(x => ({...x, image: null}))));
+  IZM = p.izm || 0; LS.set(KEYS.izm, String(IZM));
+  SY.osn = IZM; SY.up = Date.now(); saveSY();
+  fillSelects(); updCount(); renderLog(); syncStatus(); gen();
+}
+async function syncCheck(){
+  if (!syncOn() || konf) return;
+  const p = await syncDown();
+  if (!p) { if (IZM) syncUp(); return; }
+  const S = p.izm || 0, osn = SY.osn || 0;
+  if ((!state.log.length && !IZM) || (S > osn && IZM <= osn)) { applyRemote(p); toast("Podaci su osveženi sa drugog uređaja"); return; }
+  if (S > osn) { konf = true; showConflict(S); return; }
+  if (IZM > osn) syncUp();
+}
+function showConflict(S){
+  const box = $("confBox"), arm = k => confArmed === k ? "Pritisnite opet za potvrdu" : "";
+  box.innerHTML = `<h2 style="margin-top:0">${esc(fmtScript("Podaci se razlikuju"))}</h2><p>${esc(fmtScript("Na serveru postoji novija kopija sa drugog uređaja, a ima izmena i na ovom uređaju. Izaberite koje podatke zadržavate."))}</p>
+  <div class="card"><b>${esc(fmtScript("Ovaj uređaj"))}</b><div class="hint">${state.log.length} ${esc(fmtScript("zapisa u evidenciji"))}</div></div>
+  <div class="card"><b>${esc(fmtScript("Server"))}</b><div class="hint" id="confSrv">${esc(fmtScript("Učitavam..."))}</div></div>
+  <button class="big" data-c="server">${esc(fmtScript(arm("server") || "⬇ Uzmi podatke sa servera"))}</button>
+  <button class="big ghost" data-c="ovaj">${esc(fmtScript(arm("ovaj") || "⬆ Zadrži podatke sa ovog uređaja"))}</button>
+  <button class="big ghost" data-c="later">${esc(fmtScript("Odlučiću kasnije"))}</button>`;
+  $("conf").hidden = false;
+  syncDown().then(p => { const e = $("confSrv"); if (e) e.textContent = fmtScript(p ? `${(p.log || []).length} zapisa u evidenciji, izmenjeno ${p.izm ? new Date(p.izm).toLocaleString("sr-RS") : "?"}` : "Nije moguće učitati."); });
+}
+$("confBox").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-c]"); if (!b) return; const k = b.dataset.c;
+  if (k === "later") { $("conf").hidden = true; confArmed = ""; return; }
+  if (confArmed !== k) { confArmed = k; return showConflict(); }
+  confArmed = "";
+  if (k === "server") { const p = await syncDown(); if (!p) return toast("Nije uspelo. Proverite internet."); applyRemote(p); konf = false; $("conf").hidden = true; }
+  else { const ok = await syncUp(true); if (ok) { konf = false; $("conf").hidden = true; } else toast("Nije uspelo. Proverite internet."); }
+});
+async function connectSync(){
+  const sif = $("syncSifra").value.trim(), url = $("syncUrl").value.trim() || (SY && SY.url) || "";
+  if (!/^https:\/\/script\.google\.com\//.test(url)) return toast("Upišite adresu programa (počinje sa https://script.google.com/)");
+  if (!sif) return toast("Upišite šifru");
+  syncStatus("Proveravam šifru...");
+  try {
+    const j = await (await fetch(url + "?akcija=proveri&sifra=" + encodeURIComponent(sif))).json();
+    if (!j.ok) return syncStatus(j.poruka || "Šifra nije ispravna.");
+  } catch(e){ return syncStatus("Nema veze sa internetom."); }
+  SY = { sifra: sif, url, osn: 0, up: 0 }; saveSY();
+  if (!IZM && state.log.length) { IZM = Date.now(); LS.set(KEYS.izm, String(IZM)); }
+  $("syncSifra").value = ""; $("syncUrl").value = ""; konf = false; syncStatus(); await syncCheck(); syncStatus();
+}
+function syncNow(){ if (!syncOn()) return toast("Prvo povežite šifru"); konf = false; syncStatus("Sinhronizujem..."); syncCheck().then(() => syncStatus()); }
+function disconnectSync(){ SY = null; LS.set(KEYS.sync, "null"); syncStatus(); toast("Veza je prekinuta. Podaci ostaju na ovom uređaju."); }
+document.addEventListener("visibilitychange", () => { if (document.hidden) { if (syncOn() && IZM > (SY.osn || 0) && !konf) syncUp(); } else syncCheck(); });
+syncStatus(); if (syncOn()) syncCheck();
+
 ["q","r","n"].forEach(k => $("f_" + k).addEventListener("change", e => { addMedia(k, [...e.target.files]); e.target.value = ""; }));
 document.querySelectorAll(".thumbs").forEach(el => el.addEventListener("click", e => { const b = e.target.closest("button.x"); if (b) removeMedia(b.dataset.slot, b.dataset.id); }));
 document.addEventListener("paste", e => { const it = [...((e.clipboardData && e.clipboardData.items) || [])].find(i => i.type && i.type.startsWith("image/")); if (it) { const f = it.getAsFile(); if (f) addMedia($("sec_n").hidden ? "q" : "n", [f]); } });
 document.addEventListener("dragover", e => e.preventDefault());
 document.addEventListener("drop", e => { e.preventDefault(); const fl = [...((e.dataTransfer && e.dataTransfer.files) || [])]; if (fl.length) addMedia($("sec_n").hidden ? "q" : "n", fl); });
-labels(); fillSelects(); gen(); genNotice(); saveLogStore();
+labels(); fillSelects(); gen(); genNotice(); updCount(); syncStatus();
 if ("serviceWorker" in navigator && false) {}
 </script></body></html>
